@@ -1,0 +1,39 @@
+/* 全局颜色 */
+:root {
+    --primary-color: #409EFF;
+    --bg-color: #f5f7fa;
+    --text-color: #333;
+    --menu-bg-color: #ffffff;
+  }
+  
+  /* 应用全局颜色 */
+  body {
+    font-family: "Arial", sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+  }
+  
+  /* 头部 */
+  .el-header {
+    background-color: var(--primary-color);
+    color: white;
+    text-align: center;
+    padding: 10px;
+  }
+  
+  /* 菜单 */
+  .el-menu {
+    background-color: var(--menu-bg-color);
+  }
+  
+  .el-menu-item {
+    padding-left: 20px;
+  }
+  
+  /* 卡片样式 */
+  .el-card {
+    border-radius: 8px;
+    background-color: #ffffff;
+    border: 1px solid #ebeef5;
+  }
+  
