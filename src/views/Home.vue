@@ -17,7 +17,7 @@
           </el-menu-item>
 
           <!-- 订单管理菜单 -->
-          <el-menu-item index="1" @click="navigateTo('/home/product-list')">
+          <el-menu-item index="1" @click="navigateTo('/home/Orders-list')">
             <el-icon><IconMenu /></el-icon>
             <span>订单管理</span>
           </el-menu-item>

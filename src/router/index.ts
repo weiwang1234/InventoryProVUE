@@ -3,7 +3,7 @@ import Login from '../views/Login.vue'
 import Home from '../views/Home.vue'
 import HomePage from '../views/HomePage.vue'
 import MemberUser from '../views/MemberUser.vue'  // 会员用户页面
-import ProductList from '../views/ProductList.vue'
+import Orderslist from '../views/Orderslist.vue'
 import productmanagement from '../views/productmanagement.vue'
 import partnermanagement from '../views/partnermanagement.vue'
 
@@ -40,9 +40,9 @@ const routes: RouteRecordRaw[] = [
         component: partnermanagement,  // 会员用户页面
       },
       {
-        path: 'product-list',
-        name: 'ProductList',
-        component: ProductList,  // 产品列表页面
+        path: 'Orders-list',
+        name: 'Orderslist',
+        component: Orderslist,  // 产品列表页面
       },
     ],
   },
