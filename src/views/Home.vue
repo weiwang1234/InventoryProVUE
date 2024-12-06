@@ -18,43 +18,45 @@
 
           <!-- 订单管理菜单 -->
           <el-menu-item index="1" @click="navigateTo('/home/product-list')">
-            <el-icon><icon-menu /></el-icon>
+            <el-icon><IconMenu /></el-icon>
             <span>订单管理</span>
           </el-menu-item>
 
-          <!-- 新增产品管理菜单 -->
+          <!-- 产品管理菜单 -->
           <el-menu-item index="2" @click="navigateTo('/home/product-management')">
             <el-icon><DishDot /></el-icon>
             <span>产品管理</span>
           </el-menu-item>
 
+          <!-- 合作方管理菜单 -->
+          <el-menu-item index="3" @click="navigateTo('/home/partner-management')">
+            <el-icon><Expand /></el-icon>
+            <span>合作方管理</span>
+          </el-menu-item>
+
           <!-- 用户列表菜单 -->
-          <el-sub-menu index="3">
+          <el-sub-menu index="4">
             <template #title>
               <el-icon><Expand /></el-icon>
               <span>用户列表</span>
             </template>
-            <el-menu-item index="3-1" @click="navigateTo('/home/product-list')">item one</el-menu-item>
-            <el-menu-item index="3-2" @click="navigateTo('/home/1-2')">item two</el-menu-item>
-            <el-sub-menu index="3-4">
-              <template #title>item four</template>
-              <el-menu-item index="3-4-1" @click="navigateTo('/home/1-4-1')">item one</el-menu-item>
-            </el-sub-menu>
+            <el-menu-item index="4-1" @click="navigateTo('/home/product-list')">item one</el-menu-item>
+            <el-menu-item index="4-2" @click="navigateTo('/home/1-2')">item two</el-menu-item>
           </el-sub-menu>
 
-          <el-menu-item index="4" @click="navigateTo('/home/2')">
-            <el-icon><icon-menu /></el-icon>
+          <el-menu-item index="5" @click="navigateTo('/home/2')">
+            <el-icon><IconMenu /></el-icon>
             <span>Navigator Two</span>
           </el-menu-item>
-          <el-menu-item index="5" disabled>
+          <el-menu-item index="6" disabled>
             <el-icon>
-              <document />
+              <Document />
             </el-icon>
             <span>Navigator Three</span>
           </el-menu-item>
-          <el-menu-item index="6" @click="navigateTo('/home/4')">
+          <el-menu-item index="7" @click="navigateTo('/home/4')">
             <el-icon>
-              <setting />
+              <Setting />
             </el-icon>
             <span>Navigator Four</span>
           </el-menu-item>
@@ -77,7 +79,6 @@ import { Discount } from '@element-plus/icons-vue';
 import { Expand } from '@element-plus/icons-vue';
 import { DishDot } from '@element-plus/icons-vue';
 
-
 const router = useRouter()
 const activeMenu = ref('home') // 默认激活首页菜单
 
@@ -89,8 +90,10 @@ watch(() => router.currentRoute.value.path, (newPath) => {
     activeMenu.value = '1'  // 订单管理菜单
   } else if (newPath === '/home/product-management') {
     activeMenu.value = '2'  // 产品管理菜单
+  } else if (newPath === '/home/partner-management') {
+    activeMenu.value = '3'  // 合作方管理菜单
   } else if (newPath === '/home/member-user') {
-    activeMenu.value = '3'  // 用户列表菜单
+    activeMenu.value = '4'  // 用户列表菜单
   }
 })
 

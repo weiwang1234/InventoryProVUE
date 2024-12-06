@@ -5,6 +5,7 @@ import HomePage from '../views/HomePage.vue'
 import MemberUser from '../views/MemberUser.vue'  // 会员用户页面
 import ProductList from '../views/ProductList.vue'
 import productmanagement from '../views/productmanagement.vue'
+import partnermanagement from '../views/partnermanagement.vue'
 
 
 const routes: RouteRecordRaw[] = [
@@ -32,6 +33,11 @@ const routes: RouteRecordRaw[] = [
         path: 'product-management',
         name: 'productmanagement',
         component: productmanagement,  // 会员用户页面
+      },
+      {
+        path: 'partner-management',
+        name: 'partnermanagement',
+        component: partnermanagement,  // 会员用户页面
       },
       {
         path: 'product-list',
