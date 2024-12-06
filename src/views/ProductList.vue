@@ -3,7 +3,6 @@
     <!-- 面包屑导航 -->
     <el-breadcrumb separator="/">
       <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
-
       <el-breadcrumb-item>
         <a href="/home/product-list">订单列表</a>
       </el-breadcrumb-item>
@@ -25,8 +24,11 @@
       <el-table-column prop="name" label="订单编号" width="180" />
       <el-table-column prop="category" label="客户编号" width="180" />
       <el-table-column prop="price" label="总金额" width="100" />
-      <el-table-column label="操作" width="180">
+      <el-table-column prop="111" label="总金额" width="100" />
+
+      <el-table-column label="操作" width="200">
         <el-button plain @click="dialogTableVisible = true">查看详情</el-button>
+        <el-button type="danger" @click="confirmDeleteOrder">删除</el-button>
       </el-table-column>
     </el-table>
 
@@ -46,6 +48,10 @@
       <!-- 始终显示的订单详情分页 -->
       <el-pagination :current-page="dialogCurrentPage" :page-size="pageSize" :total="orderDetailData.length"
         @current-change="handleDialogPageChange" layout="total, prev, pager, next, jumper" background class="pagination-dialog" />
+
+      <!-- 删除按钮放在这里 -->
+      <div class="dialog-footer" style="margin-top: 20px; text-align: center;">
+      </div>
     </el-dialog>
 
     <!-- 新增订单对话框 -->
@@ -66,30 +72,24 @@
 
         <!-- 产品选择行 -->
         <div v-for="(productRow, index) in newOrder.selectedProducts" :key="index" class="product-row">
-  <el-form-item label="选择产品">
-    <el-select v-model="productRow.product" placeholder="请选择产品" @change="updateOrderTotal" filterable>
-      <el-option
-        v-for="product in products"
-        :key="product.id"
-        :value="product"
-        :label="product.name"
-      />
-    </el-select>
-  </el-form-item>
+          <el-form-item label="选择产品">
+            <el-select v-model="productRow.product" placeholder="请选择产品" @change="updateOrderTotal" filterable>
+              <el-option v-for="product in products" :key="product.id" :value="product" :label="product.name" />
+            </el-select>
+          </el-form-item>
 
-  <!-- 显示产品价格 -->
-  <el-form-item label="产品价格">
-    <el-input :value="productRow.product ? productRow.product.price : 0" disabled />
-  </el-form-item>
+          <!-- 显示产品价格 -->
+          <el-form-item label="产品价格">
+            <el-input :value="productRow.product ? productRow.product.price : 0" disabled />
+          </el-form-item>
 
-  <el-form-item label="购买数量">
-    <el-input v-model="productRow.quantity" type="number" placeholder="请输入数量" @input="updateOrderTotal" />
-  </el-form-item>
+          <el-form-item label="购买数量">
+            <el-input v-model="productRow.quantity" type="number" placeholder="请输入数量" @input="updateOrderTotal" />
+          </el-form-item>
 
-  <!-- 删除按钮 -->
-  <el-button type="danger" @click="removeProductRow(index)" class="delete-btn">删除</el-button>
-</div>
-
+          <!-- 删除按钮 -->
+          <el-button type="danger" @click="removeProductRow(index)" class="delete-btn">删除</el-button>
+        </div>
       </el-form>
 
       <span slot="footer" class="dialog-footer">
@@ -123,11 +123,11 @@ interface Order {
 }
 
 const products: Product[] = [
-  { id: '1', name: '1', category: '1', price: 100 },
-  { id: '2', name: '2', category: '1', price: 150 },
-  { id: '3', name: '3', category: '1', price: 200 },
-  { id: '4', name: '4', category: '1', price: 250 },
-  { id: '5', name: '5', category: '1', price: 300 },
+  { id: '1', name: '产品1', category: 'A', price: 100 },
+  { id: '2', name: '产品2', category: 'A', price: 150 },
+  { id: '3', name: '产品3', category: 'B', price: 200 },
+  { id: '4', name: '产品4', category: 'B', price: 250 },
+  { id: '5', name: '产品5', category: 'C', price: 300 },
 ]
 
 const orderDetailData = [
@@ -222,6 +222,13 @@ const updateOrderTotal = () => {
   }, 0)
   newOrder.value.price = total.toFixed(2)
 }
+
+// 删除订单时确认
+const confirmDeleteOrder = () => {
+  if (window.confirm('确定要删除这个订单吗？')) {
+    // 执行删除操作
+  }
+}
 </script>
 
 <style scoped>
@@ -244,7 +251,10 @@ const updateOrderTotal = () => {
   margin-bottom: 10px;
 }
 
-.pagination,
+.pagination {
+  margin-top: 20px;
+}
+
 .pagination-dialog {
   position: fixed;
   bottom: 0;
