@@ -24,8 +24,6 @@
       <el-table-column prop="name" label="订单编号" width="180" />
       <el-table-column prop="category" label="客户编号" width="180" />
       <el-table-column prop="price" label="总金额" width="100" />
-      <el-table-column prop="111" label="总金额" width="100" />
-
       <el-table-column label="操作" width="200">
         <el-button plain @click="dialogTableVisible = true">查看详情</el-button>
         <el-button type="danger" @click="confirmDeleteOrder">删除</el-button>
@@ -43,15 +41,18 @@
         <el-table-column prop="productName" label="产品名称" width="180" />
         <el-table-column prop="productPrice" label="产品价格" width="100" />
         <el-table-column prop="quantity" label="购买数量" width="100" />
+        
+        <!-- 每行增加一个删除按钮 -->
+        <el-table-column label="操作" width="120">
+          <template v-slot="scope">
+            <el-button type="danger" @click="removeProductFromDialog(scope.row)">删除</el-button>
+          </template>
+        </el-table-column>
       </el-table>
 
-      <!-- 始终显示的订单详情分页 -->
+      <!-- 订单详情分页 -->
       <el-pagination :current-page="dialogCurrentPage" :page-size="pageSize" :total="orderDetailData.length"
         @current-change="handleDialogPageChange" layout="total, prev, pager, next, jumper" background class="pagination-dialog" />
-
-      <!-- 删除按钮放在这里 -->
-      <div class="dialog-footer" style="margin-top: 20px; text-align: center;">
-      </div>
     </el-dialog>
 
     <!-- 新增订单对话框 -->
@@ -213,6 +214,13 @@ const removeProductRow = (index: number) => {
   updateOrderTotal()
 }
 
+const removeProductFromDialog = (productRow: any) => {
+  const index = orderDetailData.indexOf(productRow)
+  if (index !== -1) {
+    orderDetailData.splice(index, 1)
+  }
+}
+
 const updateOrderTotal = () => {
   const total = newOrder.value.selectedProducts.reduce((sum, productRow) => {
     if (productRow.product && productRow.quantity) {
@@ -227,6 +235,7 @@ const updateOrderTotal = () => {
 const confirmDeleteOrder = () => {
   if (window.confirm('确定要删除这个订单吗？')) {
     // 执行删除操作
+    console.log('订单已删除')
   }
 }
 </script>
