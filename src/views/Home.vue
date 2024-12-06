@@ -8,17 +8,22 @@
     <el-container>
       <!-- Sidebar -->
       <el-aside width="200px" style="background-color: #f4f4f4;">
-        <el-menu :default-active="activeMenu" background-color="#ffffff" text-color="#333" active-text-color="#409EFF" class="el-menu-vertical-demo" @open="handleOpen" @close="handleClose">
+        <el-menu :default-active="activeMenu" background-color="#ffffff" text-color="#333" active-text-color="#409EFF"
+          class="el-menu-vertical-demo" @open="handleOpen" @close="handleClose">
           <!-- 首页菜单 -->
           <el-menu-item index="home" @click="navigateTo('/home')">
-            <el-icon><location /></el-icon>
+            <el-icon>
+              <location />
+            </el-icon>
             <span>首页</span>
           </el-menu-item>
 
           <!-- 用户列表菜单 -->
           <el-sub-menu index="1">
             <template #title>
-              <el-icon><location /></el-icon>
+              <el-icon>
+                <location />
+              </el-icon>
               <span>用户列表</span>
             </template>
             <el-menu-item-group title="Group One">
@@ -39,11 +44,15 @@
             <span>Navigator Two</span>
           </el-menu-item>
           <el-menu-item index="3" disabled>
-            <el-icon><document /></el-icon>
+            <el-icon>
+              <document />
+            </el-icon>
             <span>Navigator Three</span>
           </el-menu-item>
           <el-menu-item index="4" @click="navigateTo('/home/4')">
-            <el-icon><setting /></el-icon>
+            <el-icon>
+              <setting />
+            </el-icon>
             <span>Navigator Four</span>
           </el-menu-item>
         </el-menu>
@@ -58,12 +67,22 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { Document, Menu as IconMenu, Location, Setting } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const activeMenu = ref('home') // 默认激活首页菜单
+
+// 监听路由变化，确保每次跳转时，菜单正确选中
+watch(() => router.currentRoute.value.path, (newPath) => {
+  if (newPath === '/home') {
+    activeMenu.value = 'home'  // 如果路由是 /home，选中首页菜单
+  } else if (newPath === '/home/product-list') {
+    activeMenu.value = 'product-list' // 如果路由是 /home/product-list，选中商品列表菜单
+  }
+  // 可以根据其他路由设置 activeMenu 的值，例如 '/home/member-user' 或 '/home/normal-user'
+})
 
 const handleOpen = (key: string, keyPath: string[]) => {
   console.log(key, keyPath)

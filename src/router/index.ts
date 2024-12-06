@@ -1,3 +1,5 @@
+// router/index.ts
+
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import Login from '../views/Login.vue'
 import Home from '../views/Home.vue'
