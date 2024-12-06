@@ -180,7 +180,7 @@ const filteredData = computed(() => {
     return order
   }
   return products.filter(item =>
-    item.name.includes(searchQuery.value) || item.category.includes(searchQuery.value)
+    item.name.includes(searchQuery.value) || item.factory.includes(searchQuery.value)
   )
 })
 
