@@ -1,12 +1,11 @@
-// router/index.ts
-
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import Login from '../views/Login.vue'
 import Home from '../views/Home.vue'
 import HomePage from '../views/HomePage.vue'
 import MemberUser from '../views/MemberUser.vue'  // 会员用户页面
-import NormalUser from '../views/NormalUser.vue'  // 普通用户页面
 import ProductList from '../views/ProductList.vue'
+import productmanagement from '../views/productmanagement.vue'
+
 
 const routes: RouteRecordRaw[] = [
   {
@@ -30,9 +29,9 @@ const routes: RouteRecordRaw[] = [
         component: MemberUser,  // 会员用户页面
       },
       {
-        path: 'normal-user',
-        name: 'NormalUser',
-        component: NormalUser,  // 普通用户页面
+        path: 'product-management',
+        name: 'productmanagement',
+        component: productmanagement,  // 会员用户页面
       },
       {
         path: 'product-list',
