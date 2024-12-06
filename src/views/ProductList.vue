@@ -21,8 +21,8 @@
 
     <!-- 订单表格 -->
     <el-table :data="currentPageData" style="width: 100%">
-      <el-table-column prop="name" label="订单编号" width="180" />
-      <el-table-column prop="category" label="客户编号" width="180" />
+      <el-table-column prop="id" label="订单编号" width="180" />
+      <el-table-column prop="name" label="客户编号" width="180" />
       <el-table-column prop="price" label="总金额" width="100" />
       <el-table-column label="操作" width="200">
         <el-button plain @click="dialogTableVisible = true">查看详情</el-button>
@@ -73,24 +73,30 @@
 
         <!-- 产品选择行 -->
         <div v-for="(productRow, index) in newOrder.selectedProducts" :key="index" class="product-row">
-          <el-form-item label="选择产品">
-            <el-select v-model="productRow.product" placeholder="请选择产品" @change="updateOrderTotal" filterable>
-              <el-option v-for="product in products" :key="product.id" :value="product" :label="product.name" />
-            </el-select>
-          </el-form-item>
+  <el-form-item label="选择产品">
+    <el-select v-model="productRow.product" placeholder="请选择产品" @change="updateOrderTotal" filterable>
+      <el-option
+        v-for="product in products"
+        :key="product.id"
+        :value="product"
+        :label="`${product.name} (${product.factory})`" 
+      />
+    </el-select>
+  </el-form-item>
 
-          <!-- 显示产品价格 -->
-          <el-form-item label="产品价格">
-            <el-input :value="productRow.product ? productRow.product.price : 0" disabled />
-          </el-form-item>
+  <!-- 显示产品价格 -->
+  <el-form-item label="产品价格">
+    <el-input :value="productRow.product ? productRow.product.price : 0" disabled />
+  </el-form-item>
 
-          <el-form-item label="购买数量">
-            <el-input v-model="productRow.quantity" type="number" placeholder="请输入数量" @input="updateOrderTotal" />
-          </el-form-item>
+  <el-form-item label="购买数量">
+    <el-input v-model="productRow.quantity" type="number" placeholder="请输入数量" @input="updateOrderTotal" />
+  </el-form-item>
 
-          <!-- 删除按钮 -->
-          <el-button type="danger" @click="removeProductRow(index)" class="delete-btn">删除</el-button>
-        </div>
+  <!-- 删除按钮 -->
+  <el-button type="danger" @click="removeProductRow(index)" class="delete-btn">删除</el-button>
+</div>
+
       </el-form>
 
       <span slot="footer" class="dialog-footer">
@@ -107,7 +113,7 @@ import { ref, computed, defineExpose } from 'vue'
 interface Product {
   id: string
   name: string
-  category: string
+  factory: string
   price: number
 }
 
@@ -122,14 +128,29 @@ interface Order {
   price: string
   selectedProducts: ProductRow[]
 }
+interface Orderlist {
+  id: string
+  name: string
+  price: number
+  
+}
 
 const products: Product[] = [
-  { id: '1', name: '产品1', category: 'A', price: 100 },
-  { id: '2', name: '产品2', category: 'A', price: 150 },
-  { id: '3', name: '产品3', category: 'B', price: 200 },
-  { id: '4', name: '产品4', category: 'B', price: 250 },
-  { id: '5', name: '产品5', category: 'C', price: 300 },
+  { id: '1', name: '产品1', factory : 'Addd', price: 100 },
+  { id: '2', name: '产品1', factory : 'Bddd', price: 150 },
+  { id: '3', name: '产品3', factory : 'Bdddddddddddd', price: 200 },
+  { id: '4', name: '产品4', factory : 'Bd', price: 250 },
+  { id: '5', name: '产品6', factory : 'Cdddddddddddddddddddddd', price: 300 },
 ]
+
+const order: Orderlist[] = [
+  { id: '1', name: '张三',  price: 100 },
+  { id: '2', name: '李四',  price: 150 },
+  { id: '3', name: '王五',  price: 200 },
+  { id: '4', name: '马六',  price: 250 },
+  { id: '5', name: '田七',  price: 300 },
+]
+
 
 const orderDetailData = [
   { productId: '101', productName: '产品A', productPrice: '50', quantity: '2' },
@@ -156,7 +177,7 @@ defineExpose({ form })
 
 const filteredData = computed(() => {
   if (!searchQuery.value) {
-    return products
+    return order
   }
   return products.filter(item =>
     item.name.includes(searchQuery.value) || item.category.includes(searchQuery.value)
