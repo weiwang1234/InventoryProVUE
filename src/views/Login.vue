@@ -20,7 +20,7 @@
 <script lang="ts" setup>
 import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'  // 引入 axios 进行 HTTP 请求
+import api from '../api';
 
 const router = useRouter()
 
@@ -32,10 +32,7 @@ const form = reactive({
 const handleLogin = async () => {
   try {
     // 发起 POST 请求到后端登录接口
-    console.log("开始请求");
-    console.log(form);
-    const response = await axios.post('http://localhost:8082/users/login', form)
-    console.log("请求结束");
+    const response = await api.post('/users/login', form)
 
     if (response.data === "登录成功") {
       // 登录成功，跳转到首页

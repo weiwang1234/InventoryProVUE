@@ -108,7 +108,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, defineExpose } from 'vue'
+import { ref, computed } from 'vue'
 
 interface Product {
   id: string
