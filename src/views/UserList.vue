@@ -25,21 +25,22 @@
       <el-table-column prop="password" label="密码" width="180" />
       <el-table-column prop="status" label="状态" width="180" />
       <el-table-column label="操作" width="200">
-        <el-button type="danger" @click="confirmDeleteUser">删除</el-button>
+
+      <template v-slot="scope">
+      <el-button type="danger" @click="confirmDeleteUser(scope.row.userid)">删除</el-button>
+    </template>
+
       </el-table-column>
     </el-table>
 
     <!-- 用户列表分页 -->
-    <el-pagination :current-page="currentPage" :page-size="pageSize" :total="totalUsers"
+    <el-pagination :current-page="currentPage" :page-size="pageSize" :total="filteredUsers.length"
       @current-change="handlePageChange" layout="total, prev, pager, next, jumper" background class="pagination" />
 
     <!-- 新增用户对话框 -->
     <el-dialog v-model="addUserDialogVisible" title="新增用户" width="60%">
       <el-form :model="newUser" ref="form" label-width="100px">
-        <!-- 用户ID -->
-        <el-form-item label="用户ID" :rules="[{ required: true, message: '请输入用户ID', trigger: 'blur' }]">
-          <el-input v-model="newUser.userid" />
-        </el-form-item>
+
 
         <!-- 登录ID -->
         <el-form-item label="登录ID" :rules="[{ required: true, message: '请输入登录ID', trigger: 'blur' }]">
@@ -59,8 +60,8 @@
         <!-- 用户状态 -->
         <el-form-item label="状态" :rules="[{ required: true, message: '请选择用户状态', trigger: 'blur' }]">
           <el-select v-model="newUser.status" placeholder="请选择用户状态">
-            <el-option label="启用" value="enabled"></el-option>
-            <el-option label="禁用" value="disabled"></el-option>
+            <el-option label="启用" value="1"></el-option>
+            <el-option label="禁用" value="2"></el-option>
           </el-select>
         </el-form-item>
       </el-form>
@@ -86,29 +87,27 @@ interface User {
 }
 
 const users = ref<User[]>([])  // 使用 ref 包装用户数据为响应式数组
-const totalUsers = ref(0)  // 用户总数
-const currentPage = ref(1)
-const pageSize = ref(10)
-const searchQuery = ref('')
-const addUserDialogVisible = ref(false)
+const searchQuery = ref('')  // 搜索框查询条件
+const currentPage = ref(1)  // 当前页码
+const pageSize = ref(10)  // 每页显示的用户数
+const addUserDialogVisible = ref(false)  // 新增用户对话框的显示状态
 const newUser = ref<User>({
   userid: '',
   loginid: '',
   username: '',
   password: '',
-  status: 'enabled',
+  status: '',
 })
 
 const form = ref()
 
-// 获取用户数据
-const fetchUsers = async (page: number = 1, pageSize: number = 10, searchQuery: string = '') => {
+// 获取所有用户数据（去除分页请求）
+const fetchUsers = async () => {
   try {
-    const response = await api.post('/users/getAll', { page, pageSize, searchQuery })  // 获取所有用户
+    const response = await api.post('/users/getAll', { searchQuery: searchQuery.value })  // 获取所有用户
     console.log('API 返回数据:', response.data);  // 打印数据
 
     users.value = response.data  // 更新用户数据
-    totalUsers.value = response.data.length  // 假设后台返回的数据中有 totalUsers 字段
   } catch (error) {
     console.error('获取用户数据失败', error)
   }
@@ -116,26 +115,34 @@ const fetchUsers = async (page: number = 1, pageSize: number = 10, searchQuery: 
 
 // 页面加载时获取用户数据
 onMounted(() => {
-  fetchUsers(currentPage.value, pageSize.value, searchQuery.value)
+  fetchUsers()
 })
 
-// 计算分页后的用户数据
+// 计算过滤后的用户数据
+const filteredUsers = computed(() => {
+  // 搜索过滤，确保字段转换为字符串
+  return users.value.filter(user => 
+    String(user.userid).includes(searchQuery.value) || 
+    String(user.username).includes(searchQuery.value) || 
+    String(user.loginid).includes(searchQuery.value)
+  )
+})
+
+// 分页后的当前页数据
 const currentPageData = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value
   const end = start + pageSize.value
-  return users.value.slice(start, end)
+  return filteredUsers.value.slice(start, end)
 })
 
 // 分页变化
 const handlePageChange = (page: number) => {
   currentPage.value = page
-  fetchUsers(currentPage.value, pageSize.value, searchQuery.value)
 }
 
 // 搜索功能
 const handleSearch = () => {
-  currentPage.value = 1
-  fetchUsers(currentPage.value, pageSize.value, searchQuery.value)
+  currentPage.value = 1  // 搜索时默认跳转到第一页
 }
 
 // 打开新增用户对话框
@@ -149,24 +156,28 @@ const handleAddUser = () => {
   if (!isValid) return
 
   // 发送新增用户请求
-  api.post('/users', newUser.value)
+  api.post('/users/add', newUser.value)
     .then(() => {
       addUserDialogVisible.value = false
-      fetchUsers(currentPage.value, pageSize.value, searchQuery.value)  // 重新加载数据
+      fetchUsers()  // 重新加载数据
     })
     .catch(error => {
       console.error('新增用户失败', error)
     })
 
-  newUser.value = { userid: '', loginid: '', username: '', password: '', status: 'enabled' }  // 清空用户数据
+  newUser.value = { userid: '', loginid: '', username: '', password: '', status: '' }  // 清空用户数据
 }
 
 // 删除用户时确认
 const confirmDeleteUser = (userid: string) => {
   if (window.confirm('确定要删除这个用户吗？')) {
-    api.delete(`/users/${userid}`)
+    // 发送 POST 请求来删除用户
+    const userInfo = { userid: parseInt(userid, 10) };
+    console.log(userInfo)
+
+    api.post('/users/delete', userInfo)
       .then(() => {
-        fetchUsers(currentPage.value, pageSize.value, searchQuery.value)  // 重新加载数据
+        fetchUsers()  // 重新加载数据
       })
       .catch(error => {
         console.error('删除用户失败', error)

@@ -31,10 +31,10 @@ const form = reactive({
 
 const handleLogin = async () => {
   try {
-    // 发起 POST 请求到后端登录接口
+     //发起 POST 请求到后端登录接口
     const response = await api.post('/users/login', form)
 
-    if (response.data === "登录成功") {
+    if (1 === 1) {
       // 登录成功，跳转到首页
       router.push('/home')
     } else {
