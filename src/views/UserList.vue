@@ -22,8 +22,12 @@
       <el-table-column prop="userid" label="用户ID" width="180" />
       <el-table-column prop="loginid" label="登录ID" width="180" />
       <el-table-column prop="username" label="用户名" width="180" />
-      <el-table-column prop="password" label="密码" width="180" />
-      <el-table-column prop="status" label="状态" width="180" />
+      <!-- <el-table-column prop="password" label="密码" width="180" /> -->
+      <el-table-column 
+        prop="status" 
+        label="状态" 
+        width="180" 
+        :formatter="statusFormatter" />
       <el-table-column label="操作" width="200">
 
       <template v-slot="scope">
@@ -84,6 +88,15 @@ interface User {
   username: string
   password: string
   status: string
+}
+
+const statusFormatter = (row: User) => {
+  if (row.status === '1') {
+    return '启用'
+  } else if (row.status === '2') {
+    return '禁用'
+  }
+  return '未知状态'  // 如果状态值不为 1 或 2，显示默认文字
 }
 
 const users = ref<User[]>([])  // 使用 ref 包装用户数据为响应式数组

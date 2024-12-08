@@ -136,11 +136,11 @@ interface Orderlist {
 }
 
 const products: Product[] = [
-  { id: '1', name: '产品1', factory : 'Addd', price: 100 },
-  { id: '2', name: '产品1', factory : 'Bddd', price: 150 },
-  { id: '3', name: '产品3', factory : 'Bdddddddddddd', price: 200 },
-  { id: '4', name: '产品4', factory : 'Bd', price: 250 },
-  { id: '5', name: '产品6', factory : 'Cdddddddddddddddddddddd', price: 300 },
+  { id: '1', name: '羊头', factory : '羊场', price: 100 },
+  { id: '2', name: '羊蹄', factory : '樊城', price: 150 },
+  { id: '3', name: '羊脑', factory : '发货', price: 200 },
+  { id: '4', name: '羊肚子', factory : 'aa', price: 250 },
+  { id: '5', name: '羊肉', factory : 'aaa', price: 300 },
 ]
 
 const order: Orderlist[] = [
@@ -153,9 +153,9 @@ const order: Orderlist[] = [
 
 
 const orderDetailData = [
-  { productId: '101', productName: '产品A', productPrice: '50', quantity: '2' },
-  { productId: '102', productName: '产品B', productPrice: '60', quantity: '1' },
-  { productId: '103', productName: '产品C', productPrice: '70', quantity: '3' },
+  { productId: '101', productName: '羊头', productPrice: '50', quantity: '2' },
+  { productId: '102', productName: '羊尾', productPrice: '60', quantity: '1' },
+  { productId: '103', productName: '羊啼', productPrice: '70', quantity: '3' },
 ]
 
 const currentPage = ref(1)

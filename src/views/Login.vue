@@ -20,7 +20,7 @@
 <script lang="ts" setup>
 import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import api from '../api';
+import api from '../api'
 
 const router = useRouter()
 
@@ -31,11 +31,15 @@ const form = reactive({
 
 const handleLogin = async () => {
   try {
-     //发起 POST 请求到后端登录接口
+    // 发起 POST 请求到后端登录接口
     const response = await api.post('/users/login', form)
 
-    if (1 === 1) {
-      // 登录成功，跳转到首页
+    // 假设后端返回用户名
+    if (response.status === 200) {
+      // 登录成功，保存用户名到 localStorage
+      localStorage.setItem('username', response.data) // 这里保存用户名
+
+      // 跳转到首页
       router.push('/home')
     } else {
       // 登录失败，提示错误

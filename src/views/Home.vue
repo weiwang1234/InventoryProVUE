@@ -1,8 +1,21 @@
 <template>
   <el-container style="height: 100vh;">
     <!-- Header -->
-    <el-header style="background-color: #409EFF; color: white; padding: 0;">
+    <el-header style="background-color: #409EFF; color: white; padding: 0; display: flex; justify-content: space-between; align-items: center;">
       <div style="line-height: 60px; padding-left: 20px; font-size: 20px;">欢迎来到后台管理系统</div>
+
+      <!-- 右侧欢迎和退出按钮 -->
+      <div style="display: flex; align-items: center; padding-right: 20px;">
+        <span style="color: white; margin-right: 20px; font-size: 14px;">欢迎, {{ username || '用户名' }}</span> <!-- 显示用户名 -->
+        <el-dropdown @command="handleLogout">
+          <el-button type="text" style="color: white;">
+            退出
+            <el-icon style="color: white;">
+              <SwitchButton /> <!-- 使用退出图标 -->
+            </el-icon>
+          </el-button>
+        </el-dropdown>
+      </div>
     </el-header>
 
     <el-container>
@@ -84,41 +97,61 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { Document, Menu as IconMenu, Setting } from '@element-plus/icons-vue'
 import { Discount } from '@element-plus/icons-vue';
 import { Expand } from '@element-plus/icons-vue';
 import { DishDot } from '@element-plus/icons-vue';
+import { SwitchButton } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const activeMenu = ref('home') // 默认激活首页菜单
+const username = ref('')
+
+// 监听页面加载时，获取保存的用户名
+onMounted(() => {
+  username.value = localStorage.getItem('username') || ''  // 从localStorage获取用户名
+})
 
 // 监听路由变化，确保每次跳转时，菜单正确选中
 watch(() => router.currentRoute.value.path, (newPath) => {
   if (newPath === '/home') {
-    activeMenu.value = 'home'  // 如果路由是 /home，选中首页菜单
+    activeMenu.value = 'home'
   } else if (newPath === '/home/product-list') {
-    activeMenu.value = '1'  // 订单管理菜单
+    activeMenu.value = '1'
   } else if (newPath === '/home/product-management') {
-    activeMenu.value = '2'  // 产品管理菜单
+    activeMenu.value = '2'
   } else if (newPath === '/home/partner-management') {
-    activeMenu.value = '3'  // 合作方管理菜单
+    activeMenu.value = '3'
   } else if (newPath === '/home/member-user') {
-    activeMenu.value = '4'  // 用户列表菜单
+    activeMenu.value = '4'
   }
 })
 
-const handleOpen = (key: string, keyPath: string[]) => {
-  console.log(key, keyPath)
-}
-
-const handleClose = (key: string, keyPath: string[]) => {
-  console.log(key, keyPath)
-}
-
+// 路由跳转
 const navigateTo = (path: string) => {
-  router.push(path) // 执行路由跳转
+  router.push(path)
+}
+
+// 退出操作
+const handleLogout = () => {
+  // 清除 localStorage 中的用户名
+  localStorage.removeItem('username')
+  // 跳转到登录页面
+  router.push('/login')
+}
+
+// 处理菜单展开事件
+const handleOpen = (key: string, keyPath: string[]) => {
+  console.log('Menu Opened:', key, keyPath)
+  // 这里可以增加展开时的处理逻辑
+}
+
+// 处理菜单收起事件
+const handleClose = (key: string, keyPath: string[]) => {
+  console.log('Menu Closed:', key, keyPath)
+  // 这里可以增加收起时的处理逻辑
 }
 </script>
 
@@ -128,6 +161,9 @@ const navigateTo = (path: string) => {
   color: white;
   text-align: center;
   padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .el-aside {
