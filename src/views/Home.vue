@@ -12,32 +12,42 @@
           class="el-menu-vertical-demo" @open="handleOpen" @close="handleClose">
           <!-- 首页菜单 -->
           <el-menu-item index="home" @click="navigateTo('/home')">
-            <el-icon><Discount /></el-icon>
+            <el-icon>
+              <Discount />
+            </el-icon>
             <span>首页</span>
           </el-menu-item>
 
           <!-- 订单管理菜单 -->
           <el-menu-item index="1" @click="navigateTo('/home/Orders-list')">
-            <el-icon><IconMenu /></el-icon>
+            <el-icon>
+              <IconMenu />
+            </el-icon>
             <span>订单管理</span>
           </el-menu-item>
 
           <!-- 产品管理菜单 -->
           <el-menu-item index="2" @click="navigateTo('/home/product-management')">
-            <el-icon><DishDot /></el-icon>
+            <el-icon>
+              <DishDot />
+            </el-icon>
             <span>产品管理</span>
           </el-menu-item>
 
           <!-- 合作方管理菜单 -->
           <el-menu-item index="3" @click="navigateTo('/home/partner-management')">
-            <el-icon><Expand /></el-icon>
+            <el-icon>
+              <Expand />
+            </el-icon>
             <span>合作方管理</span>
           </el-menu-item>
 
           <!-- 用户列表菜单 -->
           <el-sub-menu index="4">
             <template #title>
-              <el-icon><Expand /></el-icon>
+              <el-icon>
+                <Expand />
+              </el-icon>
               <span>用户列表</span>
             </template>
             <el-menu-item index="4-1" @click="navigateTo('/home/product-list')">item one</el-menu-item>
@@ -45,7 +55,9 @@
           </el-sub-menu>
 
           <el-menu-item index="5" @click="navigateTo('/home/2')">
-            <el-icon><IconMenu /></el-icon>
+            <el-icon>
+              <IconMenu />
+            </el-icon>
             <span>Navigator Two</span>
           </el-menu-item>
           <el-menu-item index="6" disabled>
@@ -54,11 +66,11 @@
             </el-icon>
             <span>Navigator Three</span>
           </el-menu-item>
-          <el-menu-item index="7" @click="navigateTo('/home/4')">
+          <el-menu-item index="7" @click="navigateTo('/home/User-list')">
             <el-icon>
               <Setting />
             </el-icon>
-            <span>Navigator Four</span>
+            <span>用户管理</span>
           </el-menu-item>
         </el-menu>
       </el-aside>

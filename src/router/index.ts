@@ -6,6 +6,8 @@ import MemberUser from '../views/MemberUser.vue'  // 会员用户页面
 import Orderslist from '../views/Orderslist.vue'
 import productmanagement from '../views/productmanagement.vue'
 import partnermanagement from '../views/partnermanagement.vue'
+import UserList from '../views/UserList.vue'
+
 
 
 const routes: RouteRecordRaw[] = [
@@ -43,6 +45,11 @@ const routes: RouteRecordRaw[] = [
         path: 'Orders-list',
         name: 'Orderslist',
         component: Orderslist,  // 产品列表页面
+      },
+      {
+        path: 'User-list',
+        name: 'UserList',
+        component: UserList,  // 产品列表页面
       },
     ],
   },
