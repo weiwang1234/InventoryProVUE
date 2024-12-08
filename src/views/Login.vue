@@ -35,9 +35,10 @@ const handleLogin = async () => {
     const response = await api.post('/users/login', form)
 
     // 假设后端返回用户名
-    if (response.status === 200) {
+    if (response.status === 200 && response.data && response.data.token) {
       // 登录成功，保存用户名到 localStorage
-      localStorage.setItem('username', response.data) // 这里保存用户名
+      localStorage.setItem('username', response.data.username)  // 保存后端返回的用户名
+      localStorage.setItem('token', response.data.token)        // 保存 token
 
       // 跳转到首页
       router.push('/home')

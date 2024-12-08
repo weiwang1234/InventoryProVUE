@@ -81,7 +81,6 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted } from 'vue'
 import api from '../api'
-
 interface User {
   userid: string
   loginid: string
@@ -117,14 +116,15 @@ const form = ref()
 // 获取所有用户数据（去除分页请求）
 const fetchUsers = async () => {
   try {
-    const response = await api.post('/users/getAll', { searchQuery: searchQuery.value })  // 获取所有用户
-    console.log('API 返回数据:', response.data);  // 打印数据
-
-    users.value = response.data  // 更新用户数据
+    const response = await api.post('/users/getAll', { searchQuery: searchQuery.value });  // 获取所有用户
+    console.log('API 返回数据:', response.data);
+    users.value = response.data;  // 更新用户数据
   } catch (error) {
-    console.error('获取用户数据失败', error)
+    console.error('获取用户数据失败', error);
+    alert('请求失败，请稍后再试');
   }
-}
+};
+
 
 // 页面加载时获取用户数据
 onMounted(() => {

@@ -7,8 +7,8 @@
       <!-- 右侧欢迎和退出按钮 -->
       <div style="display: flex; align-items: center; padding-right: 20px;">
         <span style="color: white; margin-right: 20px; font-size: 14px;">欢迎, {{ username || '用户名' }}</span> <!-- 显示用户名 -->
-        <el-dropdown @command="handleLogout">
-          <el-button type="text" style="color: white;">
+        <el-dropdown >
+          <el-button type="primary" style="color: white; position: relative;" @click="handleLogout">
             退出
             <el-icon style="color: white;">
               <SwitchButton /> <!-- 使用退出图标 -->
@@ -136,22 +136,24 @@ const navigateTo = (path: string) => {
 
 // 退出操作
 const handleLogout = () => {
+  console.log("点击退出按钮");
+
   // 清除 localStorage 中的用户名
   localStorage.removeItem('username')
+  localStorage.removeItem('token')
+
   // 跳转到登录页面
-  router.push('/login')
+  router.push('/')
 }
 
 // 处理菜单展开事件
 const handleOpen = (key: string, keyPath: string[]) => {
   console.log('Menu Opened:', key, keyPath)
-  // 这里可以增加展开时的处理逻辑
 }
 
 // 处理菜单收起事件
 const handleClose = (key: string, keyPath: string[]) => {
   console.log('Menu Closed:', key, keyPath)
-  // 这里可以增加收起时的处理逻辑
 }
 </script>
 
