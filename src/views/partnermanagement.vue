@@ -46,11 +46,6 @@
     <!-- 新增合作方对话框 -->
     <el-dialog v-model="addPartnerDialogVisible" title="新增合作方" width="60%">
       <el-form :model="newPartner" ref="form" label-width="100px">
-        <!-- 合作方ID -->
-        <el-form-item label="合作方ID" :rules="[{ required: true, message: '请输入合作方ID', trigger: 'blur' }]">
-          <el-input v-model="newPartner.partnerid" />
-        </el-form-item>
-
         <!-- 合作方名称 -->
         <el-form-item label="合作方名称" :rules="[{ required: true, message: '请输入合作方名称', trigger: 'blur' }]">
           <el-input v-model="newPartner.partnername" />
@@ -62,8 +57,9 @@
         </el-form-item>
 
         <!-- 合作方状态 -->
-        <el-form-item label="合作方状态" :rules="[{ required: true, message: '请输入合作方状态', trigger: 'blur' }]">
-          <el-input v-model="newPartner.partnerstatus" />
+        <el-form-item v-if="showPartnerId" label="合作方状态"
+          :rules="[{ required: true, message: '请输入合作方状态', trigger: 'blur' }]">
+          <el-input v-model="newPartner.partnerstatus" :value="1" />
         </el-form-item>
 
         <!-- 合作方地址 -->
@@ -74,10 +70,10 @@
         <!-- 合作方类型 -->
         <el-form-item label="合作方类型" :rules="[{ required: true, message: '请输入合作方类型', trigger: 'blur' }]">
           <el-select v-model="newPartner.partnertype" placeholder="请选择合作方类型">
-            <el-option label="进货方" value="supplier"></el-option>
-            <el-option label="送货方" value="distributor"></el-option>
+            <el-option label="进货方" value="1"></el-option>
+            <el-option label="送货方" value="2"></el-option>
           </el-select>
-        </el-form-item>
+        </el-form-item>a
       </el-form>
 
       <span slot="footer" class="dialog-footer">
@@ -113,9 +109,9 @@ const newPartner = ref<Partner>({
   partnerid: '',
   partnername: '',
   partnerphone: '',
-  partnerstatus: '',
+  partnerstatus: '1',
   partneraddress: '',
-  partnertype: 'supplier'
+  partnertype: ''
 })
 
 const form = ref()
@@ -176,10 +172,11 @@ const handleAddPartner = async () => {
   if (!isValid) return
 
   try {
-    const response = await api.post('/partners', newPartner.value) // 调用新增合作方接口
+    console.log(newPartner.value);
+    const response = await api.post('/partners/add', newPartner.value) // 调用新增合作方接口
     partners.value.push(response.data) // 将新数据添加到列表
     addPartnerDialogVisible.value = false
-    newPartner.value = { partnerid: '', partnername: '', partnerphone: '', partnerstatus: '', partneraddress: '', partnertype: 'supplier' } // 清空合作方数据
+    newPartner.value = { partnerid: '', partnername: '', partnerphone: '', partnerstatus: '', partneraddress: '', partnertype: '' } // 清空合作方数据
   } catch (error) {
     console.error('新增合作方失败:', error)
   }
@@ -189,7 +186,8 @@ const handleAddPartner = async () => {
 const confirmDeletePartner = async (partnerid: string) => {
   if (window.confirm('确定要删除这个合作方吗？')) {
     try {
-      await api.post(`/partners/delete/${partnerid}`) // 调用删除接口
+      const partner = { partnerid: parseInt(partnerid, 10) }
+      api.post('/partners/delete', partner) // 调用删除接口
       partners.value = partners.value.filter(partner => partner.partnerid !== partnerid) // 更新前端数据
       console.log('合作方已删除')
     } catch (error) {
