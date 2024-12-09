@@ -23,16 +23,12 @@
       <el-table-column prop="loginid" label="登录ID" width="180" />
       <el-table-column prop="username" label="用户名" width="180" />
       <!-- <el-table-column prop="password" label="密码" width="180" /> -->
-      <el-table-column 
-        prop="status" 
-        label="状态" 
-        width="180" 
-        :formatter="statusFormatter" />
+      <el-table-column prop="status" label="状态" width="180" :formatter="statusFormatter" />
       <el-table-column label="操作" width="200">
 
-      <template v-slot="scope">
-      <el-button type="danger" @click="confirmDeleteUser(scope.row.userid)">删除</el-button>
-    </template>
+        <template v-slot="scope">
+          <el-button type="danger" @click="confirmDeleteUser(scope.row.userid)">删除</el-button>
+        </template>
 
       </el-table-column>
     </el-table>
@@ -134,9 +130,9 @@ onMounted(() => {
 // 计算过滤后的用户数据
 const filteredUsers = computed(() => {
   // 搜索过滤，确保字段转换为字符串
-  return users.value.filter(user => 
-    String(user.userid).includes(searchQuery.value) || 
-    String(user.username).includes(searchQuery.value) || 
+  return users.value.filter(user =>
+    String(user.userid).includes(searchQuery.value) ||
+    String(user.username).includes(searchQuery.value) ||
     String(user.loginid).includes(searchQuery.value)
   )
 })
