@@ -11,7 +11,7 @@
     <!-- 搜索框 -->
     <el-row class="search-box" style="margin-bottom: 20px;">
       <el-col :span="24">
-        <el-input v-model="searchQuery" placeholder="请输入产品编号或产品名称" clearable suffix-icon="el-icon-search"
+        <el-input v-model="searchQuery" placeholder="请输入产品名称或编号" clearable suffix-icon="el-icon-search"
           @input="handleSearch" />
       </el-col>
     </el-row>
@@ -21,12 +21,17 @@
 
     <!-- 产品表格 -->
     <el-table :data="currentPageData" style="width: 100%">
-      <el-table-column prop="id" label="产品编号" width="180" />
-      <el-table-column prop="name" label="产品名称" width="180" />
-      <el-table-column prop="category" label="产品厂家" width="180" />
-      <el-table-column prop="price" label="产品价格" width="100" />
+      <el-table-column label="序号" width="80">
+        <template v-slot="scope">
+          {{ (currentPage - 1) * pageSize + scope.$index + 1 }}
+        </template>
+      </el-table-column>
+      <el-table-column v-if="showProductId" prop="productid" label="产品ID" />
+      <el-table-column prop="productname" label="产品名称" width="180" />
       <el-table-column label="操作" width="200">
-        <el-button type="danger" @click="confirmDeleteProduct">删除</el-button>
+        <template v-slot="scope">
+          <el-button type="danger" @click="confirmDeleteProduct(scope.row.productid)">删除</el-button>
+        </template>
       </el-table-column>
     </el-table>
 
@@ -37,18 +42,12 @@
     <!-- 新增产品对话框 -->
     <el-dialog v-model="addProductDialogVisible" title="新增产品" width="60%">
       <el-form :model="newProduct" ref="form" label-width="100px">
-        <el-form-item label="产品编号" :rules="[{ required: true, message: '请输入产品编号', trigger: 'blur' }]">
-          <el-input v-model="newProduct.id" />
-        </el-form-item>
+        <!-- 产品名称 -->
         <el-form-item label="产品名称" :rules="[{ required: true, message: '请输入产品名称', trigger: 'blur' }]">
-          <el-input v-model="newProduct.name" />
+          <el-input v-model="newProduct.productname" />
         </el-form-item>
-        <el-form-item label="产品厂家" :rules="[{ required: true, message: '请输入产品类别', trigger: 'blur' }]">
-          <el-input v-model="newProduct.category" />
-        </el-form-item>
-        <el-form-item label="产品价格" :rules="[{ required: true, message: '请输入产品价格', trigger: 'blur' }]">
-          <el-input v-model="newProduct.price" />
-        </el-form-item>
+        <!-- 隐藏状态字段 -->
+        <el-input v-model="newProduct.productstatus" type="hidden" />
       </el-form>
 
       <span slot="footer" class="dialog-footer">
@@ -60,88 +59,115 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import api from '../api'
+
+const showProductId = ref(false) // 控制是否显示产品ID列
 
 interface Product {
-  id: string
-  name: string
-  category: string
-  price: number
+  productid: string
+  productname: string
+  productstatus: number // 添加状态字段
 }
 
-const products: Product[] = [
-  { id: '1', name: '产品1', category: 'A', price: 100 },
-  { id: '2', name: '产品2', category: 'B', price: 150 },
-  { id: '3', name: '产品3', category: 'A', price: 200 },
-  { id: '4', name: '产品4', category: 'C', price: 250 },
-  { id: '5', name: '产品5', category: 'B', price: 300 },
-]
+const products = ref<Product[]>([]) // 使用 ref 使 products 绑定到响应式数据
 
-const currentPage = ref(1)
-const pageSize = ref(10)
-const searchQuery = ref('')
-const addProductDialogVisible = ref(false)
+const currentPage = ref(1) // 当前页码
+const pageSize = ref(10) // 每页显示条数
+const searchQuery = ref('') // 搜索查询内容
+const addProductDialogVisible = ref(false) // 控制新增产品对话框显示
 const newProduct = ref<Product>({
-  id: '',
-  name: '',
-  category: '',
-  price: 0,
+  productid: '',
+  productname: '',
+  productstatus: 1 // 默认为1，表示启用
 })
 
 const form = ref()
 
 defineExpose({ form })
 
+// 获取产品数据
+const getProducts = async () => {
+  try {
+    const response = await api.post('/products/getAll', { searchQuery: searchQuery.value }) // 获取所有产品
+    products.value = response.data // 更新响应式数组，确保页面会重新渲染
+  } catch (error) {
+    console.error('获取产品数据失败:', error)
+  }
+}
+
+// 计算过滤后的数据
 const filteredData = computed(() => {
   if (!searchQuery.value) {
-    return products
+    return products.value
   }
-  return products.filter(item =>
-    item.name.includes(searchQuery.value) || item.category.includes(searchQuery.value)
+  return products.value.filter(item =>
+    item.productname.includes(searchQuery.value) // 根据名称进行搜索
   )
 })
 
+// 计算当前页数据
 const currentPageData = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value
   const end = start + pageSize.value
   return filteredData.value.slice(start, end)
 })
 
+// 页面初始化时加载数据
+onMounted(() => {
+  getProducts()
+})
+
+// 处理分页切换
 const handlePageChange = (page: number) => {
   currentPage.value = page
 }
 
+// 处理搜索
+const handleSearch = () => {
+  currentPage.value = 1
+  getProducts() // 调用 API 重新加载数据
+}
+
+// 新增产品
 const openAddProductDialog = () => {
   addProductDialogVisible.value = true
 }
 
-const handleAddProduct = () => {
-  const isValid = form.value?.validate()
+// 处理新增产品的提交
+const handleAddProduct = async () => {
+  const isValid = await form.value?.validate()
   if (!isValid) return
 
-  // 这里可以处理产品保存逻辑，比如将 newProduct 发送到后端
-  products.push({ ...newProduct.value })
-
-  addProductDialogVisible.value = false
-  newProduct.value = { id: '', name: '', category: '', price: 0 } // 清空产品数据
-}
-
-
-
-
-
-
-const handleSearch = () => {
-  currentPage.value = 1
+  try {
+    const response = await api.post('/products/add', newProduct.value) // 调用新增产品接口
+    products.value.push(response.data) // 将新数据添加到列表
+    addProductDialogVisible.value = false
+    newProduct.value = { productid: '', productname: '', productstatus: 1 } // 清空产品数据，状态默认1
+  } catch (error) {
+    console.error('新增产品失败:', error)
+  }
 }
 
 // 删除产品时确认
-const confirmDeleteProduct = () => {
+const confirmDeleteProduct = async (productid: string) => {
   if (window.confirm('确定要删除这个产品吗？')) {
-    // 执行删除操作
-    console.log('产品已删除')
+    const Product = {
+      productid: parseInt(productid, 10),
+      productname: '',  // 如果不需要可以留空或提供默认值
+      productstatus: '', // 默认状态，或者留空
+    }
+
+    try {
+      console.log(Product)
+      await api.post('/products/delete', Product) // 传递完整的产品对象
+      products.value = products.value.filter(product => product.productid !== productid) // 更新前端数据
+      console.log('产品已删除')
+    } catch (error) {
+    }
   }
 }
+
 </script>
 
 <style scoped>
@@ -166,17 +192,6 @@ const confirmDeleteProduct = () => {
 
 .pagination {
   margin-top: 20px;
-}
-
-.pagination-dialog {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background-color: #ffffff;
-  padding: 10px 0;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-  z-index: 10;
 }
 
 .el-pagination {
