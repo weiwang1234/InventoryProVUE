@@ -159,7 +159,7 @@ const confirmDeleteProduct = async (productid: string) => {
     }
 
     try {
-      console.log(Product)
+      console.log(productid)
       await api.post('/products/delete', Product) // 传递完整的产品对象
       products.value = products.value.filter(product => product.productid !== productid) // 更新前端数据
       console.log('产品已删除')

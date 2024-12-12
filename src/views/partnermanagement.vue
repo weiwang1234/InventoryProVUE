@@ -73,7 +73,7 @@
             <el-option label="进货方" value="1"></el-option>
             <el-option label="送货方" value="2"></el-option>
           </el-select>
-        </el-form-item>a
+        </el-form-item>
       </el-form>
 
       <span slot="footer" class="dialog-footer">
