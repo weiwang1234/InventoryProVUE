@@ -439,6 +439,9 @@ const handleAddOrder = async () => {
         productname: productRow.product?.productname,
         quantity: productRow.quantity,
         unitprice: productRow.unitprice,
+        orderdate:formatDate(newOrder.value.orderdate),
+        orderparid: newOrder.value.orderparid,
+        orderparname: newOrder.value.orderparname,
       })),
     };
     console.log(orderData);
