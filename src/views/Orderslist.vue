@@ -121,10 +121,23 @@
 
           <!-- 选择产品 -->
           <el-form-item label="选择产品">
-            <el-select v-model="productRow.product" placeholder="请选择产品" @change="handleProductSelect(index)" filterable>
-              <el-option v-for="product in products" :key="product.productid" :value="product"
-                :label="product.productname" />
-            </el-select>
+            <el-select
+  v-model="productRow.productId"
+  placeholder="请选择产品"
+  @change="handleProductSelect(index)"
+  filterable
+>
+  <el-option
+    v-for="product in products"
+    :key="product.productid"
+    :value="product.productid"
+    :label="product.productname"
+  >
+    {{ product.productname }}
+  </el-option>
+</el-select>
+
+
 
           </el-form-item>
 
@@ -172,7 +185,8 @@ interface Product {
 }
 
 interface ProductRow {
-  product: Product | null; // 添加 product 属性
+  productId: string | null; // 存储产品 ID
+  product: Product | null; // 存储产品对象
   unitprice: number | null;
   quantity: number | null;
 }
@@ -271,7 +285,8 @@ const newOrder = ref<Order>({
   ordertotalamount: 0,
   orderdate: '',
   selectedProducts: [
-    {
+    {      
+      productId: null,
       product: null, // 初始化为 null
       unitprice: null,
       quantity: null,
@@ -348,6 +363,7 @@ const filteredData = computed(() => {
 const addProductRow = () => {
   newOrder.value.selectedProducts.push({
     product: null, // 确保包含 product 属性
+    productId: null,
     unitprice: 0,
     quantity: 1,
   });
@@ -461,6 +477,7 @@ const resetOrderForm = () => {
     orderdate: '',
     selectedProducts: [
       {
+        productId: null,
         product: null,
         unitprice: null,
         quantity: null,
@@ -549,10 +566,19 @@ const confirmDeleteOrder = async (orderId: string) => {
 }
 const handleProductSelect = (index: number) => {
   const selectedRow = newOrder.value.selectedProducts[index];
-  if (selectedRow && selectedRow.product) {
-    selectedRow.unitprice = selectedRow.product.unitprice || 0; // 更新产品总价
+  if (selectedRow && selectedRow.productId) {
+    const selectedProduct = products.value.find(
+      (product) => product.productid === selectedRow.productId
+    );
+    if (selectedProduct) {
+      selectedRow.product = selectedProduct; // 保存完整的产品对象
+      selectedRow.unitprice = selectedProduct.unitprice || 0; // 更新单价
+      console.log(selectedProduct.productid);
+      console.log(selectedProduct.productname);
+    }
   }
 };
+
 
 
 const updateProductId = (index: number, value: string) => {
