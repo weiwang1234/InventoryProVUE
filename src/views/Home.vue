@@ -1,13 +1,15 @@
 <template>
   <el-container style="height: 100vh;">
     <!-- Header -->
-    <el-header style="background-color: #409EFF; color: white; padding: 0; display: flex; justify-content: space-between; align-items: center;">
+    <el-header
+      style="background-color: #409EFF; color: white; padding: 0; display: flex; justify-content: space-between; align-items: center;">
       <div style="line-height: 60px; padding-left: 20px; font-size: 20px;">欢迎来到后台管理系统</div>
 
       <!-- 右侧欢迎和退出按钮 -->
       <div style="display: flex; align-items: center; padding-right: 20px;">
-        <span style="color: white; margin-right: 20px; font-size: 14px;">欢迎, {{ username || '用户名' }}</span> <!-- 显示用户名 -->
-        <el-dropdown >
+        <span style="color: white; margin-right: 20px; font-size: 14px;">欢迎, {{ username || '用户名' }}</span>
+        <!-- 显示用户名 -->
+        <el-dropdown>
           <el-button type="primary" style="color: white; position: relative;" @click="handleLogout">
             退出
             <el-icon style="color: white;">
@@ -32,12 +34,16 @@
           </el-menu-item>
 
           <!-- 订单管理菜单 -->
-          <el-menu-item index="1" @click="navigateTo('/home/Orders-list')">
-            <el-icon>
-              <IconMenu />
-            </el-icon>
-            <span>订单管理</span>
-          </el-menu-item>
+          <el-sub-menu index="1">
+            <template #title>
+              <el-icon>
+                <IconMenu />
+              </el-icon>
+              <span>订单管理</span>
+            </template>
+            <el-menu-item index="1-1" @click="navigateTo('/home/Orders-list')">送货订单管理</el-menu-item>
+            <el-menu-item index="1-2" @click="navigateTo('/home/Orders-query')">送货订单汇总查询</el-menu-item>
+          </el-sub-menu>
 
           <!-- 产品管理菜单 -->
           <el-menu-item index="2" @click="navigateTo('/home/product-management')">

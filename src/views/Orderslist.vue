@@ -9,10 +9,14 @@
     </el-breadcrumb>
 
     <!-- 搜索框 -->
-    <el-row class="search-box" style="margin-bottom: 20px;">
-      <el-col :span="24">
-        <el-input v-model="searchQuery" placeholder="请输入订单编号或客户编号" clearable suffix-icon="el-icon-search"
+    <el-row class="search-box" style="margin-bottom: 20px;" gutter="10">
+      <el-col :span="8">
+        <el-input v-model="searchQuery" placeholder="请输入客户名称" clearable suffix-icon="el-icon-search"
           @input="handleSearch" />
+      </el-col>
+      <el-col :span="8" style="text-align: right;">
+        <el-date-picker v-model="searchDateRange" type="daterange" range-separator="至" start-placeholder="开始日期"
+          end-placeholder="结束日期" format="YYYY-MM-DD" @change="handleSearch" clearable />
       </el-col>
     </el-row>
 
@@ -29,8 +33,8 @@
       <!-- <el-table-column prop="id" label="订单编号" width="180" /> -->
       <el-table-column v-if="showorderid" prop="orderid" label="产品ID" />
 
-      <el-table-column prop="orderparid" label="客户编号" width="180" />
-      <el-table-column prop="orderparname" label="客户名称" width="100" />
+      <el-table-column v-if="showorderid" prop="orderparid" label="客户编号" width="180" />
+      <el-table-column prop="orderparname" label="客户名称" width="180" />
       <el-table-column prop="ordertotalamount" label="订单金额" width="180" />
       <el-table-column prop="orderdate" label="订单日期" width="180" />
       <el-table-column label="操作" width="200">
@@ -42,7 +46,9 @@
 
       </el-table-column>
     </el-table>
-
+    <div class="total-summary">
+      订单总金额：{{ totalAmount }} 元
+    </div>
     <!-- 订单列表分页 -->
     <el-pagination :current-page="currentPage" :page-size="pageSize" :total="filteredData.length"
       @current-change="handlePageChange" layout="total, prev, pager, next, jumper" background class="pagination" />
@@ -55,8 +61,11 @@
         <el-table-column v-if="showorderid" prop="ordetailid" label="订单详情编号" width="180" />
         <el-table-column v-if="showorderid" prop="productid" label="产品ID" width="180" />
         <el-table-column prop="productname" label="产品名称" width="180" />
-        <el-table-column prop="unitprice" label="产品单价" width="180" />
-        <el-table-column prop="quantity" label="购买数量" width="180" />
+        <el-table-column prop="unitprice" label="产品总价" width="180">
+          <template v-slot="scope">
+            {{ parseFloat(scope.row.unitprice).toFixed(2) }}
+          </template>
+        </el-table-column> <el-table-column prop="quantity" label="购买数量" width="180" />
 
         <!-- 每行增加一个删除按钮 -->
         <el-table-column label="操作" width="120">
@@ -65,7 +74,6 @@
           </template>
         </el-table-column>
       </el-table>
-
       <!-- 订单详情分页 -->
       <el-pagination :current-page="dialogCurrentPage" :page-size="pageSize" :total="orderDetailData.length"
         @current-change="handleDialogPageChange" layout="total, prev, pager, next, jumper" background
@@ -79,8 +87,13 @@
           :rules="[{ required: true, message: '请输入客户编号', trigger: 'blur' }]">
           <el-input v-model="newOrder.orderparid" />
         </el-form-item>
-        <el-form-item label="客户名称" :rules="[{ required: true, message: '请输入客户编号', trigger: 'blur' }]">
-          <el-input v-model="newOrder.orderparname" />
+
+        <el-form-item label="客户名称" :rules="[{ required: true, message: '请选择客户', trigger: 'blur' }]">
+          <el-select v-model="newOrder.orderparname" filterable placeholder="请输入客户名称" @change="handleCustomerSelect"
+            style="width: 220px;">
+            <el-option v-for="customer in customers" :key="customer.partnerid" :value="customer.partnername"
+              :label="customer.partnername" />
+          </el-select>
         </el-form-item>
 
 
@@ -92,7 +105,7 @@
         </el-form-item>
 
         <el-form-item label="总金额" :rules="[{ required: true, message: '请输入总金额', trigger: 'blur' }]">
-          <el-input v-model="newOrder.ordertotalamount" />
+          <el-input v-model="newOrder.ordertotalamount" readonly style="width: 220px;" />
         </el-form-item>
 
         <!-- 增加产品按钮 -->
@@ -106,18 +119,13 @@
               @input="(value: string) => updateProductId(index, value)" disabled />
           </el-form-item>
 
-          <!-- 隐藏产品名称 -->
-          <el-form-item label="产品名称" style="display: none;">
-            <el-input :model-value="productRow.product?.productname"
-              @input="(value: string) => updateProductName(index, value)" disabled />
-          </el-form-item>
-
           <!-- 选择产品 -->
           <el-form-item label="选择产品">
             <el-select v-model="productRow.product" placeholder="请选择产品" @change="handleProductSelect(index)" filterable>
               <el-option v-for="product in products" :key="product.productid" :value="product"
-                :label="`${product.productname}`" />
+                :label="product.productname" />
             </el-select>
+
           </el-form-item>
 
           <!-- 产品总价 -->
@@ -129,6 +137,8 @@
           <el-form-item label="产品数量">
             <el-input v-model="productRow.quantity" type="number" placeholder="请输入数量" @input="updateOrderTotal" />
           </el-form-item>
+          <el-button type="danger" class="delete-btn" @click="removeProductRow(index)">删除</el-button>
+
         </div>
 
 
@@ -177,6 +187,16 @@ interface Order {
   selectedProducts: ProductRow[]
 }
 
+// 获取产品列表
+const getProducts = async () => {
+  try {
+    const response = await api.post('/products/getAll'); // 调用后端接口
+    products.value = response.data; // 将返回的数据赋值给响应式变量
+  } catch (error) {
+    console.error('获取产品列表失败:', error);
+  }
+};
+
 // const products: Product[] = [
 //   { id: '1', name: '羊头', factory: '羊场', price: 100 },
 //   { id: '2', name: '羊蹄', factory: '樊城', price: 150 },
@@ -185,11 +205,49 @@ interface Order {
 //   { id: '5', name: '羊肉', factory: 'aaa', price: 300 },
 // ]
 
-const products = ref([
-  { productid: '1', productname: '羊头' },
-  { productid: '2', productname: '羊尾' },
-]);
+const totalAmount = computed(() => {
+  return currentPageData.value.reduce((sum, order) => {
+    const amount = Number(order.ordertotalamount) || 0; // 转换为数字，默认值为 0
+    return sum + amount;
+  }, 0).toFixed(2); // 保留两位小数
+});
 
+const removeProductRow = (index: number) => {
+  // 删除指定索引的产品行
+  newOrder.value.selectedProducts.splice(index, 1);
+  updateOrderTotal(); // 更新订单总金额
+};
+const searchDateRange = ref<[string, string] | null>(null);
+
+
+
+
+const products = ref<Product[]>([]); // 从后端动态获取数据
+
+const customers = ref<Customer[]>([])
+
+interface Customer {
+  partnerid: string
+  partnername: string
+}
+
+const handleCustomerSelect = (value: string) => {
+  // 根据客户名称找到对应的客户ID并赋值
+  const selectedCustomer = customers.value.find(customer => customer.partnername === value)
+  if (selectedCustomer) {
+    newOrder.value.orderparid = selectedCustomer.partnerid  // 将客户ID赋给 orderparid
+  }
+}
+
+// 获取客户数据
+const getCustomers = async () => {
+  try {
+    const response = await api.post('/partners/getAll', { searchQuery: searchQuery.value }) // 获取所有合作方
+    customers.value = response.data // 更新响应式数组，确保页面会重新渲染
+  } catch (error) {
+    console.error('获取合作方数据失败:', error)
+  }
+};
 
 const currentPage = ref(1)
 const pageSize = ref(10)
@@ -199,6 +257,9 @@ const dialogCurrentPage = ref(1)
 const addOrderDialogVisible = ref(false)
 // const orderDetailData: Product[] = []  // 初始化为空数组
 const orderDetailData = ref<Product[]>([]); // 将 orderDetailData 声明为响应式数组
+
+
+// 维护客户列表
 
 // 订单列表数据
 const orderList = ref<Order[]>([])
@@ -257,13 +318,31 @@ const getOrderDetails = async (orderid: string) => {
 
 // 计算过滤后的数据
 const filteredData = computed(() => {
-  if (!searchQuery.value) {
-    return orderList.value
+  let result = orderList.value;
+
+  // 按关键词筛选
+  if (searchQuery.value) {
+    result = result.filter((item) =>
+      item.orderparname.includes(searchQuery.value) || item.orderparid.includes(searchQuery.value)
+    );
   }
-  return orderList.value.filter(item =>
-    item.orderparname.includes(searchQuery.value)
-  )
-})
+
+  // 按日期范围筛选
+  if (searchDateRange.value && searchDateRange.value.length === 2) {
+    const [startDate, endDate] = searchDateRange.value;
+    result = result.filter((item) => {
+      const orderDate = new Date(item.orderdate).getTime();
+      return (
+        orderDate >= new Date(startDate).getTime() &&
+        orderDate <= new Date(new Date(endDate).setHours(23, 59, 59, 999)).getTime()
+      );
+    });
+  }
+
+  return result;
+});
+
+
 
 
 const addProductRow = () => {
@@ -291,18 +370,105 @@ const openAddOrderDialog = () => {
   addOrderDialogVisible.value = true
 }
 
-const handleAddOrder = () => {
-  const isValid = form.value?.validate()
-  if (!isValid) return
-
-  newOrder.value.selectedProducts.forEach((productRow) => {
-    if (productRow.product) {
-      // 处理订单保存逻辑
+const handleAddOrder = async () => {
+  // 校验表单
+  form.value?.validate(async (valid: boolean) => {
+    if (!valid) {
+      console.error('表单校验未通过');
+      return;
     }
-  })
+    // 自定义校验逻辑
+    if (!newOrder.value.orderparname) {
+      alert('请选择客户名称');
+      return;
+    }
 
-  addOrderDialogVisible.value = false
+    if (!newOrder.value.orderdate) {
+      alert('请选择订单日期');
+      return;
+    }
+
+    // 自定义校验逻辑
+    if (newOrder.value.selectedProducts.length === 0) {
+      alert('请至少添加一个产品');
+      return;
+    }
+
+    for (const productRow of newOrder.value.selectedProducts) {
+      if (!productRow.product) {
+        alert('请确保所有产品都已选择');
+        return;
+      }
+      if (!productRow.unitprice || productRow.unitprice <= 0) {
+        alert('产品总价必须为正数');
+        return;
+      }
+      if (!productRow.quantity || productRow.quantity <= 0) {
+        alert('产品数量必须为正数');
+        return;
+      }
+    }
+
+    // 整理需要发送的订单数据
+    const orderData = {
+      order: {
+        orderid: newOrder.value.orderid,
+        orderparid: newOrder.value.orderparid,
+        orderparname: newOrder.value.orderparname,
+        orderdate: formatDate(newOrder.value.orderdate),
+        ordertotalamount: newOrder.value.ordertotalamount,
+      },
+      orderDetails: newOrder.value.selectedProducts.map((productRow) => ({
+        productid: productRow.product?.productid,
+        productname: productRow.product?.productname,
+        quantity: productRow.quantity,
+        unitprice: productRow.unitprice,
+      })),
+    };
+    console.log(orderData);
+    try {
+      // 发送订单数据到后端
+      const response = await api.post('/orders/addall', orderData);
+      console.log('订单新增成功:', response.data);
+
+      // 成功后关闭对话框并清空表单
+      addOrderDialogVisible.value = false;
+      resetOrderForm();
+
+      // 刷新订单列表
+      getOrders();
+    } catch (error) {
+      console.error('订单新增失败:', error);
+    }
+  });
+};
+
+
+
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr); // 解析 ISO 8601 格式的日期
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // 月份是从0开始的，需要加1并格式化为2位数
+  const day = String(date.getDate()).padStart(2, '0'); // 日期格式化为2位数
+  return `${year}-${month}-${day}`;
 }
+const resetOrderForm = () => {
+  newOrder.value = {
+    orderid: '',
+    orderparid: '',
+    orderparname: '',
+    ordertotalamount: 0,
+    orderdate: '',
+    selectedProducts: [
+      {
+        product: null,
+        unitprice: null,
+        quantity: null,
+      },
+    ],
+  };
+};
+
 
 const dialogCurrentPageData = computed(() => {
   const start = (dialogCurrentPage.value - 1) * pageSize.value;
@@ -333,7 +499,11 @@ const removeProductFromDialog = async (orderDetailId: string) => {
   if (window.confirm('确定要删除这条订单详情吗？')) {
     try {
       // 调用后端删除 API，传递订单详情编号
-      const OrderDetail = { orderDetailId: parseInt(orderDetailId, 10) }
+      const OrderDetail = {
+
+        ordetailid: parseInt(orderDetailId, 10)
+      }
+      console.log(OrderDetail);
       const response = await api.post('/ordersdetail/delete', OrderDetail);
 
       console.log('删除成功:', response.data);
@@ -384,12 +554,6 @@ const handleProductSelect = (index: number) => {
   }
 };
 
-const updateProductName = (index: number, value: string) => {
-  const selectedRow = newOrder.value.selectedProducts[index];
-  if (selectedRow && selectedRow.product) {
-    selectedRow.product.productname = value; // 更新产品名称
-  }
-};
 
 const updateProductId = (index: number, value: string) => {
   const selectedRow = newOrder.value.selectedProducts[index];
@@ -401,7 +565,10 @@ const updateProductId = (index: number, value: string) => {
 
 // 页面初始化时加载订单数据
 onMounted(() => {
-  getOrders()
+  getOrders();
+  getCustomers();
+  getProducts(); // 加载产品数据
+
 })
 </script>
 
@@ -474,5 +641,22 @@ onMounted(() => {
 
 .dialog-footer {
   text-align: right;
+}
+
+.total-summary {
+  margin-top: 10px;
+  padding: 10px 15px;
+  font-size: 16px;
+  font-weight: bold;
+  background-color: #f5f7fa;
+  /* 浅灰色背景 */
+  border: 1px solid #ebeef5;
+  /* 浅色边框 */
+  border-radius: 5px;
+  /* 圆角 */
+  text-align: left;
+  /* 右对齐 */
+  color: #333;
+  /* 深色字体 */
 }
 </style>
