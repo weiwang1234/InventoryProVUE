@@ -1,0 +1,207 @@
+<template>
+  <div class="orders-query-page">
+    <!-- 面包屑导航 -->
+    <el-breadcrumb separator="/">
+      <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
+      <el-breadcrumb-item>
+        <a href="/home/orders-query">订单查询</a>
+      </el-breadcrumb-item>
+    </el-breadcrumb>
+
+    <!-- 查询条件 -->
+    <div class="search-box">
+      <el-form :inline="true" label-width="80px" class="filter-form">
+        <el-form-item label="日期范围">
+          <el-date-picker
+            v-model="dateRange"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"  
+            format="YYYY-MM-DD"
+          />
+        </el-form-item>
+        <el-form-item label="客户名称">
+          <el-input v-model="customerName" placeholder="请输入客户名称" />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="searchOrders">查询</el-button>
+          <el-button @click="resetFilters">重置</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+
+    <!-- 订单表格 -->
+    <el-table :data="currentPageData" style="width: 100%">
+      <el-table-column label="序号" width="80">
+        <template v-slot="scope">
+          {{ (currentPage - 1) * pageSize + scope.$index + 1 }}
+        </template>
+      </el-table-column>
+      <el-table-column prop="orderparname" label="客户名称" width="180" />
+      <el-table-column label="总金额" width="150">
+        <template v-slot="scope" prop="totalamount">
+          {{ scope.row.totalAmount.toFixed(2) }}
+        </template>
+      </el-table-column>
+    </el-table>
+
+    <!-- 汇总信息 -->
+    <div class="total-summary">
+      总金额汇总: {{ totalAmountSummary.toFixed(2) }}
+    </div>
+
+    <!-- 订单列表分页 -->
+    <el-pagination :current-page="currentPage" :page-size="pageSize" :total="filteredData.length"
+      @current-change="handlePageChange" layout="total, prev, pager, next, jumper" background class="pagination" />
+  </div>
+</template>
+
+<script lang="ts" setup>
+import { ref, computed, onMounted } from 'vue';
+import api from '../api';
+
+interface Order {
+  orderid: string;
+  customername: string;
+  totalamount: number;
+}
+
+const orders = ref<Order[]>([]); // 使用 ref 使 orders 绑定到响应式数据
+
+const currentPage = ref(1); // 当前页码
+const pageSize = ref(10); // 每页显示条数
+const dateRange = ref<[string, string] | null>(null); // 日期范围
+const customerName = ref(''); // 客户名称
+
+// 获取订单数据
+const getOrders = async () => {
+  try {
+    const response = await api.post('/orders/summary', {}); // 获取所有订单
+    orders.value = response.data || []; // 更新响应式数组，确保页面会重新渲染
+  } catch (error) {
+    console.error('获取订单数据失败:', error);
+  }
+};
+
+// 搜索订单
+const searchOrders = async () => {
+  try {
+
+    const startDateformat = dateRange.value ? dateRange.value[0] : '';
+    const endDateformat = dateRange.value ? dateRange.value[1] : '';
+
+    const sWhere = JSON.stringify({
+      StartDate: formatDate(startDateformat),
+      EndDate: formatDate(endDateformat),
+      orderparname: customerName.value,
+    });
+    console.log(sWhere)
+    const response = await api.post('/orders/summary', { sWhere });   
+    
+    console.log(response.data )
+
+    orders.value = response.data || [];
+    currentPage.value = 1; // 重置到第一页
+  } catch (error) {
+    console.error('搜索订单失败:', error);
+  }
+};
+
+// 重置筛选条件
+const resetFilters = () => {
+  dateRange.value = null;
+  customerName.value = '';
+  getOrders();
+};
+
+// 计算过滤后的数据
+const filteredData = computed(() => {
+  return orders.value;
+});
+
+// 计算当前页数据
+const currentPageData = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value;
+  const end = start + pageSize.value;
+  return filteredData.value.slice(start, end);
+});
+
+// 计算总金额汇总
+const totalAmountSummary = computed(() => {
+  return orders.value.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+});
+
+// 页面初始化时加载数据
+onMounted(() => {
+  getOrders();
+});
+
+// 处理分页切换
+const handlePageChange = (page: number) => {
+  currentPage.value = page;
+};
+
+function formatDate(dateStr: string): string {
+  if (!dateStr) {
+    return ''; // 如果输入字符串为空，返回空字符串
+  }
+  const date = new Date(dateStr); // 解析 ISO 8601 格式的日期
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // 月份是从0开始的，需要加1并格式化为2位数
+  const day = String(date.getDate()).padStart(2, '0'); // 日期格式化为2位数
+  return `${year}-${month}-${day}`;
+}
+</script>
+
+<style scoped>
+.orders-query-page {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  background-color: #f9f9f9;
+}
+
+.el-breadcrumb {
+  margin-bottom: 20px;
+}
+
+.search-box {
+  margin-bottom: 20px;
+}
+
+.el-table {
+  margin-bottom: 10px;
+}
+
+.summary {
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.pagination {
+  margin-top: 20px;
+}
+
+.el-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.total-summary {
+  margin-top: 10px;
+  padding: 10px 15px;
+  font-size: 16px;
+  font-weight: bold;
+  background-color: #f5f7fa;
+  /* 浅灰色背景 */
+  border: 1px solid #ebeef5;
+  /* 浅色边框 */
+  border-radius: 5px;
+  /* 圆角 */
+  text-align: left;
+  /* 右对齐 */
+  color: #333;
+  /* 深色字体 */
+}
+</style>

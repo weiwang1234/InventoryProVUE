@@ -7,6 +7,8 @@ import Orderslist from '../views/Orderslist.vue'
 import productmanagement from '../views/productmanagement.vue'
 import partnermanagement from '../views/partnermanagement.vue'
 import UserList from '../views/UserList.vue'
+import Ordersquery from '../views/Ordersquery.vue'
+
 
 
 
@@ -50,6 +52,11 @@ const routes: RouteRecordRaw[] = [
         path: 'User-list',
         name: 'UserList',
         component: UserList,  // 产品列表页面
+      },
+      {
+        path: 'Orders-query',
+        name: 'Ordersquery',
+        component: Ordersquery,  // 产品列表页面
       },
     ],
   },
