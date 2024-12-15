@@ -104,6 +104,7 @@
   <script lang="ts" setup>
   import { ref, computed, onMounted } from 'vue';
   import api from '../api';
+  import { ElMessageBox } from 'element-plus';
 
   interface Order {
     orderid: string;
@@ -128,6 +129,7 @@
   const pageSize = ref(10); // 每页显示条数
   const dateRange = ref<[string, string] | null>(null); // 日期范围
   const customerName = ref(''); // 客户名称
+  const queryExecuted = ref(false); // 是否执行过查询
 
   // 获取订单数据
   const getOrders = async () => {
@@ -157,6 +159,14 @@
       console.log(response.data )
 
       orders.value = response.data || [];
+      orders.value = response.data || [];
+       queryExecuted.value = true; // 标记已执行查询
+       if (orders.value.length === 0) {
+       ElMessageBox.alert('暂无符合条件的数据，请调整查询条件后重试。', '提示', {
+        confirmButtonText: '确定',
+        type: 'warning',
+      });
+    }
       currentPage.value = 1; // 重置到第一页
     } catch (error) {
       console.error('搜索订单失败:', error);
