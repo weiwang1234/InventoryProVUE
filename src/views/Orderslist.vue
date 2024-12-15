@@ -541,14 +541,15 @@ const removeProductFromDialog = async (orderDetailId: string) => {
 
 const updateOrderTotal = () => {
   const total = newOrder.value.selectedProducts.reduce((sum, productRow) => {
-    if (productRow.unitprice && productRow.quantity) {
-      return sum + productRow.unitprice * productRow.quantity;
+    if (productRow.unitprice) { // 只考虑 unitprice，不乘以 quantity
+      const unitPrice = Number(productRow.unitprice) || 0;
+
+      return sum + unitPrice;
     }
     return sum;
   }, 0);
   newOrder.value.ordertotalamount = Number(total.toFixed(2)); // 更新订单总金额
 };
-
 
 
 // 删除订单时确认
