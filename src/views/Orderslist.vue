@@ -121,26 +121,15 @@
 
           <!-- 选择产品 -->
           <el-form-item label="选择产品">
-            <el-select
-  v-model="productRow.productId"
-  placeholder="请选择产品"
-  @change="handleProductSelect(index)"
-  filterable
->
-  <el-option
-    v-for="product in products"
-    :key="product.productid"
-    :value="product.productid"
-    :label="product.productname"
-  >
-    {{ product.productname }}
-  </el-option>
-</el-select>
-
-
+            <el-select v-model="productRow.productId" placeholder="请选择产品" @change="handleProductSelect(index)"
+              filterable>
+              <el-option v-for="product in products" :key="product.productid" :value="product.productid"
+                :label="product.productname">
+                {{ product.productname }}
+              </el-option>
+            </el-select>
 
           </el-form-item>
-
           <!-- 产品总价 -->
           <el-form-item label="产品总价">
             <el-input v-model="productRow.unitprice" type="number" placeholder="请输入产品总价" @input="updateOrderTotal" />
@@ -151,13 +140,7 @@
             <el-input v-model="productRow.quantity" type="number" placeholder="请输入数量" @input="updateOrderTotal" />
           </el-form-item>
           <el-button type="danger" class="delete-btn" @click="removeProductRow(index)">删除</el-button>
-
         </div>
-
-
-
-
-
       </el-form>
 
       <span slot="footer" class="dialog-footer">
@@ -172,6 +155,7 @@
 import { ref, computed, onMounted } from 'vue'
 import api from '../api'
 const showorderid = ref(false) // 控制是否显示产品ID列
+import { ElMessage } from 'element-plus'; // 使用 Element Plus 的消息提示组件
 
 
 interface Product {
@@ -285,7 +269,7 @@ const newOrder = ref<Order>({
   ordertotalamount: 0,
   orderdate: '',
   selectedProducts: [
-    {      
+    {
       productId: null,
       product: null, // 初始化为 null
       unitprice: null,
@@ -439,7 +423,7 @@ const handleAddOrder = async () => {
         productname: productRow.product?.productname,
         quantity: productRow.quantity,
         unitprice: productRow.unitprice,
-        orderdate:formatDate(newOrder.value.orderdate),
+        orderdate: formatDate(newOrder.value.orderdate),
         orderparid: newOrder.value.orderparid,
         orderparname: newOrder.value.orderparname,
       })),
@@ -449,15 +433,28 @@ const handleAddOrder = async () => {
       // 发送订单数据到后端
       const response = await api.post('/orders/addall', orderData);
       console.log('订单新增成功:', response.data);
-
+      // 显示成功消息
+      ElMessage({
+        message: '订单新增成功！',
+        type: 'success',
+      });
       // 成功后关闭对话框并清空表单
       addOrderDialogVisible.value = false;
       resetOrderForm();
 
       // 刷新订单列表
       getOrders();
-    } catch (error) {
+    } catch (error: any) { // 将 error 类型设置为 any，直接访问其属性
       console.error('订单新增失败:', error);
+
+      const errorMessage = error.response?.data || '订单新增失败，发生未知错误';
+
+      // 显示错误消息
+      ElMessage({
+        message: errorMessage,
+        type: 'error',
+        duration: 5000, // 持续时间（毫秒）
+      });
     }
   });
 };
