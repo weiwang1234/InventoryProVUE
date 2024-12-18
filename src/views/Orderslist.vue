@@ -54,7 +54,8 @@
       @current-change="handlePageChange" layout="total, prev, pager, next, jumper" background class="pagination" />
 
     <!-- 订单详情对话框 -->
-    <el-dialog v-model="dialogTableVisible" title="订单详情" width="60%">
+    <el-dialog v-model="dialogTableVisible" title="订单详情" width="60%" @close="refreshOrderList"> <!-- 添加关闭事件 -->
+
       <el-table :data="dialogCurrentPageData" style="width: 100%">
 
         <el-table-column v-if="showorderid" prop="orderid" label="订单编号" width="180" />
@@ -587,6 +588,9 @@ const updateProductId = (index: number, value: string) => {
   if (selectedRow && selectedRow.product) {
     selectedRow.product.productid = value; // 更新产品 ID
   }
+};
+const refreshOrderList = () => {
+  getOrders(); // 调用获取订单列表的方法
 };
 
 
