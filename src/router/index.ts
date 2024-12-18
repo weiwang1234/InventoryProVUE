@@ -8,6 +8,8 @@ import productmanagement from '../views/productmanagement.vue'
 import partnermanagement from '../views/partnermanagement.vue'
 import UserList from '../views/UserList.vue'
 import Ordersquery from '../views/Ordersquery.vue'
+import inventoryquery from '../views/inventoryquery.vue'
+
 
 
 
@@ -57,6 +59,11 @@ const routes: RouteRecordRaw[] = [
         path: 'Orders-query',
         name: 'Ordersquery',
         component: Ordersquery,  // 产品列表页面
+      },
+      {
+        path: 'inventory-query',
+        name: 'inventoryquery',
+        component: inventoryquery,  // 产品列表页面
       },
     ],
   },

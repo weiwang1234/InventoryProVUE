@@ -8,12 +8,11 @@
       <!-- 右侧欢迎和退出按钮 -->
       <div style="display: flex; align-items: center; padding-right: 20px;">
         <span style="color: white; margin-right: 20px; font-size: 14px;">欢迎, {{ username || '用户名' }}</span>
-        <!-- 显示用户名 -->
         <el-dropdown>
           <el-button type="primary" style="color: white; position: relative;" @click="handleLogout">
             退出
             <el-icon style="color: white;">
-              <SwitchButton /> <!-- 使用退出图标 -->
+              <SwitchButton />
             </el-icon>
           </el-button>
         </el-dropdown>
@@ -45,8 +44,19 @@
             <el-menu-item index="1-2" @click="navigateTo('/home/Orders-query')">送货订单汇总查询</el-menu-item>
           </el-sub-menu>
 
+          <!-- 月底盘账一级菜单 -->
+          <el-sub-menu index="2">
+            <template #title>
+              <el-icon>
+                <Document />
+              </el-icon>
+              <span>月底盘账</span>
+            </template>
+            <el-menu-item index="2-1" @click="navigateTo('/home/inventory-query')">当前库存查询</el-menu-item>
+          </el-sub-menu>
+
           <!-- 产品管理菜单 -->
-          <el-menu-item index="2" @click="navigateTo('/home/product-management')">
+          <el-menu-item index="3" @click="navigateTo('/home/product-management')">
             <el-icon>
               <DishDot />
             </el-icon>
@@ -54,7 +64,7 @@
           </el-menu-item>
 
           <!-- 合作方管理菜单 -->
-          <el-menu-item index="3" @click="navigateTo('/home/partner-management')">
+          <el-menu-item index="4" @click="navigateTo('/home/partner-management')">
             <el-icon>
               <Expand />
             </el-icon>
@@ -62,30 +72,30 @@
           </el-menu-item>
 
           <!-- 用户列表菜单 -->
-          <el-sub-menu index="4">
+          <el-sub-menu index="5">
             <template #title>
               <el-icon>
                 <Expand />
               </el-icon>
               <span>用户列表</span>
             </template>
-            <el-menu-item index="4-1" @click="navigateTo('/home/product-list')">item one</el-menu-item>
-            <el-menu-item index="4-2" @click="navigateTo('/home/1-2')">item two</el-menu-item>
+            <el-menu-item index="5-1" @click="navigateTo('/home/product-list')">item one</el-menu-item>
+            <el-menu-item index="5-2" @click="navigateTo('/home/1-2')">item two</el-menu-item>
           </el-sub-menu>
 
-          <el-menu-item index="5" @click="navigateTo('/home/2')">
+          <el-menu-item index="6" @click="navigateTo('/home/2')">
             <el-icon>
               <IconMenu />
             </el-icon>
             <span>Navigator Two</span>
           </el-menu-item>
-          <el-menu-item index="6" disabled>
+          <el-menu-item index="7" disabled>
             <el-icon>
               <Document />
             </el-icon>
             <span>Navigator Three</span>
           </el-menu-item>
-          <el-menu-item index="7" @click="navigateTo('/home/User-list')">
+          <el-menu-item index="8" @click="navigateTo('/home/User-list')">
             <el-icon>
               <Setting />
             </el-icon>
@@ -126,11 +136,11 @@ watch(() => router.currentRoute.value.path, (newPath) => {
     activeMenu.value = 'home'
   } else if (newPath === '/home/product-list') {
     activeMenu.value = '1'
-  } else if (newPath === '/home/product-management') {
+  } else if (newPath === '/home/inventory-query') {
     activeMenu.value = '2'
-  } else if (newPath === '/home/partner-management') {
+  } else if (newPath === '/home/product-management') {
     activeMenu.value = '3'
-  } else if (newPath === '/home/member-user') {
+  } else if (newPath === '/home/partner-management') {
     activeMenu.value = '4'
   }
 })
