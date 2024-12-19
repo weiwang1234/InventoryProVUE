@@ -38,8 +38,11 @@
 
       <el-table-column v-if="showorderid" prop="orderparid" label="客户编号" width="180" />
       <el-table-column prop="orderparname" label="客户名称" width="180" />
-      <el-table-column prop="ordertotalamount" label="订单金额" width="180" />
-      <el-table-column prop="orderdate" label="订单日期" width="180" />
+      <el-table-column prop="ordertotalamount" label="订单金额" width="180">
+        <template v-slot="scope">
+          {{ Number(scope.row.ordertotalamount).toFixed(2) }}
+        </template>
+      </el-table-column> <el-table-column prop="orderdate" label="订单日期" width="180" />
       <el-table-column label="操作" width="200">
         <template v-slot="scope">
 
@@ -219,7 +222,7 @@ const removeProductRow = (index: number) => {
   newOrder.value.selectedProducts.splice(index, 1);
   updateOrderTotal(); // 更新订单总金额
 };
-const searchDateRange = ref<[string, string] | null>(null);
+const searchDateRange = ref<string[] | null>(null);
 
 
 
@@ -267,6 +270,7 @@ const dialogCurrentPage = ref(1)
 const addOrderDialogVisible = ref(false)
 // const orderDetailData: Product[] = []  // 初始化为空数组
 const orderDetailData = ref<Product[]>([]); // 将 orderDetailData 声明为响应式数组
+import { ElMessageBox } from 'element-plus';
 
 
 // 维护客户列表
@@ -329,28 +333,7 @@ const getOrderDetails = async (orderid: string) => {
 
 // 计算过滤后的数据
 const filteredData = computed(() => {
-  let result = orderList.value;
-
-  // 按关键词筛选
-  if (searchQuery.value) {
-    result = result.filter((item) =>
-      item.orderparname.includes(searchQuery.value) || item.orderparid.includes(searchQuery.value)
-    );
-  }
-
-  // 按日期范围筛选
-  if (searchDateRange.value && searchDateRange.value.length === 2) {
-    const [startDate, endDate] = searchDateRange.value;
-    result = result.filter((item) => {
-      const orderDate = new Date(item.orderdate).getTime();
-      return (
-        orderDate >= new Date(startDate).getTime() &&
-        orderDate <= new Date(new Date(endDate).setHours(23, 59, 59, 999)).getTime()
-      );
-    });
-  }
-
-  return result;
+  return orderList.value;
 });
 
 
@@ -514,10 +497,57 @@ const handleDialogPageChange = (page: number) => {
   dialogCurrentPage.value = page
 }
 
-const handleSearch = () => {
-  currentPage.value = 1
-  getOrders() // 调用 API 重新加载订单数据
-}
+const handleSearch = async () => {
+  try {
+    if (
+      (!searchDateRange.value || searchDateRange.value.length === 0) &&
+      (!searchQuery.value || searchQuery.value.trim() === '')
+    ) {
+      ElMessageBox.alert('请输入至少一个查询条件！', '提示', {
+        confirmButtonText: '确定',
+        type: 'warning',
+      });
+      return;
+    }
+
+    // 格式化日期范围
+    const startDate = searchDateRange.value ? searchDateRange.value[0] : '';
+    const endDate = searchDateRange.value ? searchDateRange.value[1] : '';
+
+    // 构造查询条件
+    const searchCriteria = {
+      startDate: startDate ? formatDate(startDate) : null,
+      endDate: endDate ? formatDate(endDate) : null,
+      orderparname: searchQuery.value || null, // 客户名称
+    };
+
+    console.log('查询条件:', searchCriteria);
+
+    // 调用后端接口
+    const response = await api.post('/orders/summary', searchCriteria);
+
+    console.log('搜索结果:', response.data);
+
+    // 更新订单数据
+    orderList.value = response.data || [];
+    currentPage.value = 1; // 重置到第一页
+
+    // 如果没有数据，显示提示
+    if (orderList.value.length === 0) {
+      ElMessageBox.alert('暂无符合条件的数据，请调整查询条件后重试。', '提示', {
+        confirmButtonText: '确定',
+        type: 'warning',
+      });
+    }
+  } catch (error) {
+    console.error('搜索订单失败:', error);
+    ElMessage({
+      message: '搜索订单失败，请稍后再试。',
+      type: 'error',
+    });
+  }
+};
+
 
 const openOrderDetailsDialog = (orderId: string) => {
   getOrderDetails(orderId) // 打开订单详情
