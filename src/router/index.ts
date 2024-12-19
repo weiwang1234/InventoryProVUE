@@ -9,6 +9,8 @@ import partnermanagement from '../views/partnermanagement.vue'
 import UserList from '../views/UserList.vue'
 import Ordersquery from '../views/Ordersquery.vue'
 import inventoryquery from '../views/inventoryquery.vue'
+import PurchaseOrdersList from '../views/PurchaseOrdersList.vue'
+
 
 
 
@@ -64,6 +66,11 @@ const routes: RouteRecordRaw[] = [
         path: 'inventory-query',
         name: 'inventoryquery',
         component: inventoryquery,  // 产品列表页面
+      },
+      {
+        path: 'PurchaseOrders-list',
+        name: 'PurchaseOrdersList',
+        component: PurchaseOrdersList,  // 产品列表页面
       },
     ],
   },

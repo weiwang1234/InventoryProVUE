@@ -44,8 +44,8 @@
         </template>
       </el-table-column> <el-table-column prop="orderdate" label="订单日期" width="180" />
       <el-table-column label="操作" width="200">
-        <template v-slot="scope">
 
+        <template v-slot="scope">
           <el-button plain @click="openOrderDetailsDialog(scope.row.orderid)">查看详情</el-button>
           <el-button type="danger" @click="confirmDeleteOrder(scope.row.orderid)">删除</el-button>
         </template>
