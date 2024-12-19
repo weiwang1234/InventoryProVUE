@@ -62,7 +62,7 @@ const filteredData = computed(() => {
     return inventories.value;
   }
   return inventories.value.filter((item) =>
-    item.product_name.includes(searchQuery.value)
+    item.productname.includes(searchQuery.value)
   );
 });
 
