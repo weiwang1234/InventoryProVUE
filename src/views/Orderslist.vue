@@ -10,13 +10,16 @@
 
     <!-- 搜索框 -->
     <el-row class="search-box" style="margin-bottom: 20px;" gutter="10">
-      <el-col :span="8">
-        <el-input v-model="searchQuery" placeholder="请输入客户名称" clearable suffix-icon="el-icon-search"
-          @input="handleSearch" />
-      </el-col>
       <el-col :span="8" style="text-align: right;">
         <el-date-picker v-model="searchDateRange" type="daterange" range-separator="至" start-placeholder="开始日期"
-          end-placeholder="结束日期" format="YYYY-MM-DD" @change="handleSearch" clearable />
+          end-placeholder="结束日期" format="YYYY-MM-DD" clearable />
+      </el-col>
+      <el-col :span="4">
+        <el-input v-model="searchQuery" placeholder="请输入客户名称" clearable suffix-icon="el-icon-search" />
+      </el-col>
+      <el-col :span="8">
+        <el-button type="primary" @click="handleSearch">查询</el-button>
+        <el-button @click="resetSearchFilters">重置</el-button>
       </el-col>
     </el-row>
 
@@ -238,6 +241,14 @@ const handleCustomerSelect = (value: string) => {
   }
 }
 
+//搜索功能
+const resetSearchFilters = () => {
+  searchQuery.value = ''; // 清空客户名称搜索框
+  searchDateRange.value = null; // 清空日期范围
+  getOrders(); // 调用 API 获取全部订单
+};
+
+
 // 获取客户数据
 const getCustomers = async () => {
   try {
@@ -287,7 +298,7 @@ defineExpose({ form })
 // 获取订单数据
 const getOrders = async () => {
   try {
-    const response = await api.post('/orders/getAll', { searchQuery: searchQuery.value })
+    const response = await api.post('/orders/getsamday', { searchQuery: searchQuery.value })
     // console.log(response.data)
     orderList.value = response.data // 更新响应式数据，确保页面渲染
   } catch (error) {
