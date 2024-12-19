@@ -28,7 +28,7 @@
           {{ (currentPage - 1) * pageSize + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column prop="orderid" label="订单编号" width="150" />
+      <el-table-column v-if="showorderid" prop="orderid" label="订单编号" width="150" />
       <el-table-column prop="orderparname" label="商户名称" width="200" />
       <el-table-column prop="ordertotalamount" label="订单总金额" width="120" :formatter="formatAmount" />
       <el-table-column prop="orderdate" label="订单日期" width="150" />
@@ -48,12 +48,40 @@
     <!-- 分页 -->
     <el-pagination :current-page="currentPage" :page-size="pageSize" :total="purchaseOrders.length"
       @current-change="handlePageChange" layout="total, prev, pager, next, jumper" background class="pagination" />
+
+    <el-dialog v-model="dialogTableVisible" title="订单详情" width="60%" @close="refreshOrderList">
+      <el-table :data="dialogCurrentPageData" style="width: 100%">
+        <el-table-column v-if="showorderid" prop="orderid" label="订单编号" width="180" />
+        <el-table-column v-if="showorderid" prop="ordetailid" label="订单详情编号" width="180" />
+        <el-table-column v-if="showorderid" prop="productid" label="产品ID" width="180" />
+        <el-table-column prop="productname" label="产品名称" width="180" />
+        <el-table-column prop="unitprice" label="产品总价" width="180">
+          <template v-slot="scope">
+            {{ parseFloat(scope.row.unitprice).toFixed(2) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="quantity" label="购买数量" width="180" />
+        <el-table-column label="操作" width="120">
+          <template v-slot="scope">
+            <el-button type="danger" @click="removeProductFromDialog(scope.row.ordetailid)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <!-- 订单详情分页 -->
+      <el-pagination :current-page="dialogCurrentPage" :page-size="pageSize" :total="orderDetailData.length"
+        @current-change="handleDialogPageChange" layout="total, prev, pager, next, jumper" background
+        class="pagination-dialog" />
+    </el-dialog>
+
+
   </div>
 </template>
 
 <script lang="ts" setup>
 import { ref, computed, onMounted } from 'vue';
 import api from '../api';
+import { ElMessageBox } from 'element-plus';
 
 interface PurchaseOrder {
   orderid: string;
@@ -61,6 +89,53 @@ interface PurchaseOrder {
   ordertotalamount: number;
   orderdate: string;
 }
+
+interface OrderDetail {
+  orderid: string;
+  ordetailid: string;
+  productid: string;
+  productname: string;
+  unitprice: number;
+  quantity: number;
+}
+const showorderid = ref(false) // 控制是否显示产品ID列
+const dialogTableVisible = ref(false);
+const dialogCurrentPage = ref(1);
+const orderDetailData = ref<OrderDetail[]>([]);
+const dialogCurrentPageData = computed(() => {
+  const start = (dialogCurrentPage.value - 1) * pageSize.value;
+  const end = start + pageSize.value;
+  return orderDetailData.value.slice(start, end);
+});
+// 查看订单详情
+const viewDetails = async (orderid: string) => {
+  try {
+    // 使用动态路径参数传递订单ID
+    const response = await api.post(`/purchaseorderdetails/getorderid/${orderid}`);
+    orderDetailData.value = response.data || [];
+    dialogTableVisible.value = true; // 打开对话框
+  } catch (error) {
+    console.error('获取订单详情失败:', error);
+  }
+};
+const removeProductFromDialog = async (ordetailid: string) => {
+  try {
+    await api.post('/order/removeProduct', { ordetailid });
+    orderDetailData.value = orderDetailData.value.filter((item) => item.ordetailid !== ordetailid);
+  } catch (error) {
+    console.error('删除产品失败:', error);
+  }
+};
+
+// 详情对话框分页切换
+const handleDialogPageChange = (page: number) => {
+  dialogCurrentPage.value = page;
+};
+
+// 刷新订单列表
+const refreshOrderList = () => {
+  getPurchaseOrders();
+};
 
 const purchaseOrders = ref<PurchaseOrder[]>([]);
 const currentPage = ref(1);
@@ -73,7 +148,7 @@ const getPurchaseOrders = async () => {
   try {
 
     const searchpama = {
-      searchQuery: searchQuery.value,
+      customerName: searchQuery.value,
       startDate: searchDateRange.value ? formatDate(searchDateRange.value[0]) : null,
       endDate: searchDateRange.value ? formatDate(searchDateRange.value[1]) : null,
     };
@@ -132,9 +207,30 @@ const handlePageChange = (page: number) => {
 };
 
 // 查询
-const handleSearch = () => {
+const handleSearch = async () => {
+  if (
+    !searchQuery.value &&
+    (!searchDateRange.value || searchDateRange.value.length !== 2) // 检查数组长度是否为2
+  ) {
+    ElMessageBox.alert('请输入至少一个查询条件！', '提示', {
+      confirmButtonText: '确定',
+    });
+    return;
+  }
+
   currentPage.value = 1;
-  getPurchaseOrders();
+  try {
+
+    await getPurchaseOrders(); // 获取数据
+    if (purchaseOrders.value.length === 0) {
+      ElMessageBox.alert('暂无符合条件的数据，请调整查询条件后重试。', '提示', {
+        confirmButtonText: '确定',
+        type: 'warning',
+      });
+    }
+  } catch (error) {
+    console.error('查询数据时出现错误:', error);
+  }
 };
 
 // 重置
@@ -142,14 +238,9 @@ const resetSearchFilters = () => {
   searchQuery.value = '';
   searchDateRange.value = null;
   currentPage.value = 1;
-  getPurchaseOrders();
 };
 
-// 查看订单详情
-const viewDetails = (orderid: string) => {
-  console.log('查看订单详情:', orderid);
-  // 可跳转到详情页面或弹窗展示详情
-};
+
 
 // 删除订单
 const deleteOrder = async (orderid: string) => {
