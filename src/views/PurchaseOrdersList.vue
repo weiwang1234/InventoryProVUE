@@ -50,7 +50,7 @@
     <!-- 分页 -->
     <el-pagination :current-page="currentPage" :page-size="pageSize" :total="purchaseOrders.length"
       @current-change="handlePageChange" layout="total, prev, pager, next, jumper" background class="pagination" />
-
+    <!-- 详情 -->
     <el-dialog v-model="dialogTableVisible" title="订单详情" width="60%" @close="refreshOrderList">
       <el-table :data="dialogCurrentPageData" style="width: 100%">
         <el-table-column v-if="showorderid" prop="orderid" label="订单编号" width="180" />
@@ -103,7 +103,13 @@
         <el-button type="success" @click="addProductRow">增加产品</el-button>
 
         <div v-for="(productRow, index) in newOrder.selectedProducts" :key="index" class="product-row">
-          <el-form-item label="选择产品" class="form-item-inline">
+          <!-- 隐藏的产品ID列 -->
+          <el-form-item label="产品ID" class="form-item-inline">
+            <el-input v-model="productRow.productId" readonly />
+          </el-form-item>
+
+          <!-- 产品名称列 -->
+          <el-form-item label="产品名称" class="form-item-inline">
             <el-select v-model="productRow.productId" placeholder="请选择产品" @change="handleProductSelect(index)"
               filterable>
               <el-option v-for="product in products" :key="product.productid" :value="product.productid"
@@ -112,29 +118,27 @@
               </el-option>
             </el-select>
           </el-form-item>
+
+          <!-- 产品总价 -->
           <el-form-item label="产品总价" class="form-item-inline">
             <el-input v-model="productRow.unitprice" type="number" placeholder="请输入产品总价" @input="updateOrderTotal" />
           </el-form-item>
+
+          <!-- 产品数量 -->
           <el-form-item label="产品数量" class="form-item-inline">
             <el-input v-model="productRow.quantity" type="number" placeholder="请输入数量" @input="updateOrderTotal" />
           </el-form-item>
+
+          <!-- 删除按钮 -->
           <el-button type="danger" class="delete-btn" @click="removeProductRow(index)">删除</el-button>
         </div>
 
-
       </el-form>
-
       <span slot="footer" class="dialog-footer">
         <el-button @click="addOrderDialogVisible = false">取消</el-button>
         <el-button type="primary" @click="handleAddOrder">确定</el-button>
       </span>
     </el-dialog>
-
-
-
-
-
-
   </div>
 </template>
 
@@ -194,7 +198,13 @@ const handleDialogPageChange = (page: number) => {
 
 // 刷新订单列表
 const refreshOrderList = () => {
-  getPurchaseOrders();
+  if (searchQuery.value || (searchDateRange.value && searchDateRange.value.length === 2)) {
+    // 如果搜索框有值或者选择了日期范围，则重新加载搜索的数据列表
+    handleSearch();
+  } else {
+    // 否则加载全部数据
+    getpurchaseorderlist();
+  }
 };
 
 const purchaseOrders = ref<PurchaseOrder[]>([]);
@@ -260,6 +270,8 @@ function formatDate(dateStr: string): string {
 onMounted(() => {
   getpurchaseorderlist();
   getCustomers(); // 加载客户信息
+  getProducts(); // 加载产品信息
+
 
 });
 
@@ -345,9 +357,11 @@ interface Product {
 
 interface ProductRow {
   productId: string;
+  productname: string; // 新增字段：产品名称
   unitprice: number;
   quantity: number;
 }
+
 const customers = ref<Customer[]>([]);
 const products = ref<Product[]>([]);
 const getCustomers = async () => {
@@ -358,6 +372,16 @@ const getCustomers = async () => {
     console.error('获取客户信息失败:', error);
   }
 };
+
+const getProducts = async () => {
+  try {
+    const response = await api.post('/products/getAll'); // 调用后台接口获取产品列表
+    products.value = response.data; // 更新响应式变量 products
+  } catch (error) {
+    console.error('获取产品列表失败:', error);
+  }
+};
+
 
 const handleCustomerSelect = (value: string) => {
   const selectedCustomer = customers.value.find(customer => customer.partnername === value);
@@ -371,6 +395,8 @@ const addProductRow = () => {
     productId: '',
     unitprice: 0,
     quantity: 0,
+    productname: '',
+
   });
 };
 
@@ -384,16 +410,21 @@ const handleProductSelect = (index: number) => {
     product => product.productid === newOrder.value.selectedProducts[index].productId
   );
   if (selectedProduct) {
+    newOrder.value.selectedProducts[index].productname = selectedProduct.productname; // 设置产品名称
     newOrder.value.selectedProducts[index].unitprice = selectedProduct.unitprice || 0;
   }
   updateOrderTotal();
 };
-
 const updateOrderTotal = () => {
-  newOrder.value.ordertotalamount = newOrder.value.selectedProducts.reduce(
-    (total, product) => total + product.unitprice * product.quantity,
-    0
-  );
+  const total = newOrder.value.selectedProducts.reduce((sum, productRow) => {
+    if (productRow.unitprice) { // 只考虑 unitprice，不乘以 quantity
+      const unitPrice = Number(productRow.unitprice) || 0;
+
+      return sum + unitPrice;
+    }
+    return sum;
+  }, 0);
+  newOrder.value.ordertotalamount = Number(total.toFixed(2)); // 更新订单总金额
 };
 
 
@@ -401,6 +432,8 @@ const emptyProductRow = (): ProductRow => ({
   productId: '',
   unitprice: 0,
   quantity: 0,
+  productname: ''// 新增字段：产品名称
+
 });
 const openAddOrderDialog = () => {
   newOrder.value.selectedProducts = [emptyProductRow()]; // 默认只添加一条空白产品行
@@ -409,25 +442,109 @@ const openAddOrderDialog = () => {
 
 
 const handleAddOrder = async () => {
-  try {
-    await api.post('/purchaseorders/add', newOrder.value);
-    ElMessageBox.alert('订单新增成功！', '提示', {
+  if (!newOrder.value.orderparid || !newOrder.value.orderparname) {
+    ElMessageBox.alert('请选择完整的客户信息！', '提示', {
       confirmButtonText: '确定',
-      type: 'success',
+      type: 'warning',
     });
-    addOrderDialogVisible.value = false;
-    newOrder.value = {
-      orderparid: '',
-      orderparname: '',
-      orderdate: '',
-      ordertotalamount: 0,
-      selectedProducts: [],
+    return;
+  }
+
+  if (!newOrder.value.orderdate) {
+    ElMessageBox.alert('请选择订单日期！', '提示', {
+      confirmButtonText: '确定',
+      type: 'warning',
+    });
+    return;
+  }
+
+  if (newOrder.value.selectedProducts.length === 0) {
+    ElMessageBox.alert('请至少添加一个产品！', '提示', {
+      confirmButtonText: '确定',
+      type: 'warning',
+    });
+    return;
+  }
+
+  for (const [index, productRow] of newOrder.value.selectedProducts.entries()) {
+    if (!productRow.productId) {
+      ElMessageBox.alert(`第 ${index + 1} 行未选择产品！`, '提示', {
+        confirmButtonText: '确定',
+        type: 'warning',
+      });
+      return;
+    }
+    if (!productRow.unitprice || productRow.unitprice <= 0) {
+      ElMessageBox.alert(`第 ${index + 1} 行的产品总价必须为正数！`, '提示', {
+        confirmButtonText: '确定',
+        type: 'warning',
+      });
+      return;
+    }
+    if (!productRow.quantity || productRow.quantity <= 0) {
+      ElMessageBox.alert(`第 ${index + 1} 行的产品数量必须为正数！`, '提示', {
+        confirmButtonText: '确定',
+        type: 'warning',
+      });
+      return;
+    }
+  }
+
+  try {
+    const formattedOrderDate = formatDate(newOrder.value.orderdate);
+
+    const formattedOrder = {
+      purchaseorder: {
+        orderparid: newOrder.value.orderparid,
+        orderparname: newOrder.value.orderparname,
+        ordertotalamount: newOrder.value.ordertotalamount,
+        orderdate: formattedOrderDate,
+      },
+      purchaseorderdetaillist: newOrder.value.selectedProducts.map(productRow => ({
+        productid: productRow.productId,
+        productname: productRow.productname,
+        quantity: productRow.quantity,
+        unitprice: productRow.unitprice,
+        orderdate: formattedOrderDate,
+      })),
     };
-    getPurchaseOrders();
+    console.log(formattedOrder)
+    const response = await api.post('/purchaseorders/add', formattedOrder);
+
+    if (response.status === 200) {
+      ElMessageBox.alert('订单新增成功！', '提示', {
+        confirmButtonText: '确定',
+        type: 'success',
+      });
+
+      addOrderDialogVisible.value = false;
+      newOrder.value = {
+        orderparid: '',
+        orderparname: '',
+        orderdate: '',
+        ordertotalamount: 0,
+        selectedProducts: [],
+      };
+
+      searchQuery.value = '';
+      searchDateRange.value = null;
+
+      getpurchaseorderlist();
+    } else {
+      ElMessageBox.alert('新增订单失败，请重试！', '错误', {
+        confirmButtonText: '确定',
+        type: 'error',
+      });
+    }
   } catch (error) {
     console.error('新增订单失败:', error);
+    ElMessageBox.alert('新增订单时发生错误，请稍后重试！', '错误', {
+      confirmButtonText: '确定',
+    });
   }
 };
+
+
 
 </script>
 
