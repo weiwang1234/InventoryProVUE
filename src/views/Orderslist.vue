@@ -518,13 +518,13 @@ const handleSearch = async () => {
     const searchCriteria = {
       startDate: startDate ? formatDate(startDate) : null,
       endDate: endDate ? formatDate(endDate) : null,
-      orderparname: searchQuery.value || null, // 客户名称
+      customerName: searchQuery.value || null, // 客户名称
     };
 
     console.log('查询条件:', searchCriteria);
 
     // 调用后端接口
-    const response = await api.post('/orders/summary', searchCriteria);
+    const response = await api.post('/orders/searchOrders', searchCriteria);
 
     console.log('搜索结果:', response.data);
 
