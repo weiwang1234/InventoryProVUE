@@ -10,6 +10,8 @@ import UserList from '../views/UserList.vue'
 import Ordersquery from '../views/Ordersquery.vue'
 import inventoryquery from '../views/inventoryquery.vue'
 import PurchaseOrdersList from '../views/PurchaseOrdersList.vue'
+import PurchaseSummaryQuery from '../views/PurchaseSummaryQuery.vue'
+
 
 
 
@@ -71,6 +73,11 @@ const routes: RouteRecordRaw[] = [
         path: 'PurchaseOrders-list',
         name: 'PurchaseOrdersList',
         component: PurchaseOrdersList,  // 产品列表页面
+      },
+      {
+        path: 'PurchaseSummary-Query',
+        name: 'PurchaseSummaryQuery',
+        component: PurchaseSummaryQuery,  // 产品列表页面
       },
     ],
   },

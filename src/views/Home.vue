@@ -43,7 +43,7 @@
             <el-menu-item index="1-1" @click="navigateTo('/home/Orders-list')">送货订单管理</el-menu-item>
             <el-menu-item index="1-2" @click="navigateTo('/home/Orders-query')">送货订单汇总查询</el-menu-item>
             <el-menu-item index="1-3" @click="navigateTo('/home/PurchaseOrders-list')">进货订单管理</el-menu-item>
-            <el-menu-item index="1-4" @click="navigateTo('/home/PurchaseOrders-query')">进货订单汇总查询</el-menu-item>
+            <el-menu-item index="1-4" @click="navigateTo('/home/PurchaseSummary-Query')">进货订单汇总查询</el-menu-item>
           </el-sub-menu>
 
           <!-- 月底盘账一级菜单 -->
