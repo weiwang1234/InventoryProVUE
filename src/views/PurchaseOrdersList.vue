@@ -104,7 +104,7 @@
 
         <div v-for="(productRow, index) in newOrder.selectedProducts" :key="index" class="product-row">
           <!-- 隐藏的产品ID列 -->
-          <el-form-item label="产品ID" class="form-item-inline">
+          <el-form-item label="产品ID" class="form-item-inline" style="display: none;">
             <el-input v-model="productRow.productId" readonly />
           </el-form-item>
 
@@ -182,12 +182,37 @@ const viewDetails = async (orderid: string) => {
     console.error('获取订单详情失败:', error);
   }
 };
+
+
 const removeProductFromDialog = async (ordetailid: string) => {
   try {
-    await api.post('/order/removeProduct', { ordetailid });
+    // 使用路径参数传递 ordetailid
+    await api.post(`/purchaseorderdetails/delete/${ordetailid}`);
+
+    // 从前端数据中移除已删除的产品
     orderDetailData.value = orderDetailData.value.filter((item) => item.ordetailid !== ordetailid);
-  } catch (error) {
-    console.error('删除产品失败:', error);
+
+    // 提示删除成功
+    ElMessageBox.alert(`订单删除成功！`, '成功', {
+      confirmButtonText: '确定',
+      type: 'success',
+    });
+  } catch (error: any) {
+    if (error.response && error.response.status === 400) {
+      // 捕获库存不足错误，并提示具体的错误信息
+      ElMessageBox.alert(error.response.data, '库存不足', {
+        confirmButtonText: '确定',
+        type: 'error',
+      });
+    } else {
+      console.error('删除产品失败:', error);
+
+      // 提示其他错误
+      ElMessageBox.alert('删除产品时发生错误，请稍后重试！', '错误', {
+        confirmButtonText: '确定',
+        type: 'error',
+      });
+    }
   }
 };
 
@@ -321,13 +346,38 @@ const resetSearchFilters = () => {
 // 删除订单
 const deleteOrder = async (orderid: string) => {
   try {
-    await api.post('/purchaseorders/delete', { orderid });
+    // 使用路径参数传递 orderid
+    await api.post(`/purchaseorders/delete/${orderid}`);
     console.log('订单删除成功:', orderid);
-    getPurchaseOrders();
-  } catch (error) {
-    console.error('删除订单失败:', error);
+
+    // 使用 ElMessageBox.alert 提示删除成功
+    ElMessageBox.alert(`订单删除成功！`, '成功', {
+      confirmButtonText: '确定',
+      type: 'success',
+    });
+
+    getPurchaseOrders(); // 刷新订单列表
+  } catch (error: any) {
+    if (error.response && error.response.status === 400) {
+      // 使用 ElMessageBox.alert 提示库存不足错误
+      ElMessageBox.alert(error.response.data, '提示', {
+        confirmButtonText: '确定',
+        type: 'error',
+      });
+    } else {
+      console.error('删除订单失败:', error);
+
+      // 使用 ElMessageBox.alert 提示严重错误
+      ElMessageBox.alert('删除订单时发生错误，请稍后重试！', '错误', {
+        confirmButtonText: '确定',
+        type: 'error',
+      });
+    }
   }
 };
+
+
+
 
 // 格式化订单金额
 const formatAmount = (row: PurchaseOrder) => {
