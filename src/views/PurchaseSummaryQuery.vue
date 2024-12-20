@@ -76,13 +76,20 @@
   // 查询条件和表格数据
   const dateRange = ref<[string, string] | null>(null);
   const customerName = ref('');
-  const orders = ref([]);
   const currentPage = ref(1);
   const pageSize = ref(10);
-  
+  const orders = ref<Order[]>([]); // 使用 ref 使 orders 绑定到响应式数据
+
   // 是否显示客户ID列
   const showCustomerId = ref(false);
-  
+  interface Order {
+  orderid: string;
+  orderparid: string;
+  customername: string;
+  totalAmount: number;
+}
+
+
   // 获取进货汇总数据
   const getOrders = async () => {
     try {
@@ -100,6 +107,7 @@
         ElMessageBox.alert('请输入至少一个查询条件！', '提示', {
           confirmButtonText: '确定',
           type: 'warning',
+          lockScroll: false, // 允许页面滚动
         });
         return;
       }
