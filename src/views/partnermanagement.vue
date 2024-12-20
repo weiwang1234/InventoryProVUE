@@ -70,8 +70,8 @@
         <!-- 合作方类型 -->
         <el-form-item label="合作方类型" :rules="[{ required: true, message: '请输入合作方类型', trigger: 'blur' }]">
           <el-select v-model="newPartner.partnertype" placeholder="请选择合作方类型">
-            <el-option label="进货方" value="1"></el-option>
-            <el-option label="送货方" value="2"></el-option>
+            <el-option label="送货方" value="1"></el-option>
+            <el-option label="进货方" value="2"></el-option>
           </el-select>
         </el-form-item>
       </el-form>

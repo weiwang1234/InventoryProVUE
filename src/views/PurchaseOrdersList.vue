@@ -21,8 +21,10 @@
       </el-col>
     </el-row>
 
+    <el-button type="primary" class="add-order-button" @click="openAddOrderDialog">新增订单</el-button>
+
     <!-- 进货订单表格 -->
-    <el-table :data="currentPageData" style="width: 100%; margin-top: 20px;">
+    <el-table :data="currentPageData" style="width: 100%; margin-top: 0;">
       <el-table-column label="序号" width="80">
         <template v-slot="scope">
           {{ (currentPage - 1) * pageSize + scope.$index + 1 }}
@@ -73,6 +75,64 @@
         @current-change="handleDialogPageChange" layout="total, prev, pager, next, jumper" background
         class="pagination-dialog" />
     </el-dialog>
+
+
+    <el-dialog v-model="addOrderDialogVisible" title="新增订单" width="60%">
+      <el-form :model="newOrder" ref="form" label-width="100px">
+        <el-form-item v-if="showorderid" label="客户编号"
+          :rules="[{ required: true, message: '请输入客户编号', trigger: 'blur' }]">
+          <el-input v-model="newOrder.orderparid" />
+        </el-form-item>
+
+        <el-form-item label="客户名称" :rules="[{ required: true, message: '请选择客户', trigger: 'blur' }]">
+          <el-select v-model="newOrder.orderparname" filterable placeholder="请输入客户名称" @change="handleCustomerSelect"
+            style="width: 220px;">
+            <el-option v-for="customer in customers" :key="customer.partnerid" :value="customer.partnername"
+              :label="customer.partnername" />
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="订单日期" :rules="[{ required: true, message: '请输入订单日期', trigger: 'blur' }]">
+          <el-date-picker v-model="newOrder.orderdate" type="date" placeholder="请选择一个日期" />
+        </el-form-item>
+
+        <el-form-item label="总金额" :rules="[{ required: true, message: '请输入总金额', trigger: 'blur' }]">
+          <el-input v-model="newOrder.ordertotalamount" readonly style="width: 220px;" />
+        </el-form-item>
+
+        <el-button type="success" @click="addProductRow">增加产品</el-button>
+
+        <div v-for="(productRow, index) in newOrder.selectedProducts" :key="index" class="product-row">
+          <el-form-item label="选择产品" class="form-item-inline">
+            <el-select v-model="productRow.productId" placeholder="请选择产品" @change="handleProductSelect(index)"
+              filterable>
+              <el-option v-for="product in products" :key="product.productid" :value="product.productid"
+                :label="product.productname">
+                {{ product.productname }}
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="产品总价" class="form-item-inline">
+            <el-input v-model="productRow.unitprice" type="number" placeholder="请输入产品总价" @input="updateOrderTotal" />
+          </el-form-item>
+          <el-form-item label="产品数量" class="form-item-inline">
+            <el-input v-model="productRow.quantity" type="number" placeholder="请输入数量" @input="updateOrderTotal" />
+          </el-form-item>
+          <el-button type="danger" class="delete-btn" @click="removeProductRow(index)">删除</el-button>
+        </div>
+
+
+      </el-form>
+
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="addOrderDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleAddOrder">确定</el-button>
+      </span>
+    </el-dialog>
+
+
+
+
 
 
   </div>
@@ -199,6 +259,8 @@ function formatDate(dateStr: string): string {
 // 页面加载时初始化数据
 onMounted(() => {
   getpurchaseorderlist();
+  getCustomers(); // 加载客户信息
+
 });
 
 // 分页切换
@@ -214,6 +276,8 @@ const handleSearch = async () => {
   ) {
     ElMessageBox.alert('请输入至少一个查询条件！', '提示', {
       confirmButtonText: '确定',
+      type: 'warning',
+
     });
     return;
   }
@@ -257,6 +321,114 @@ const deleteOrder = async (orderid: string) => {
 const formatAmount = (row: PurchaseOrder) => {
   return row.ordertotalamount.toFixed(2);
 };
+
+
+//新增订单------------------------------------------------------------------------
+const addOrderDialogVisible = ref(false);
+const newOrder = ref({
+  orderparid: '',
+  orderparname: '',
+  orderdate: '',
+  ordertotalamount: 0,
+  selectedProducts: [] as ProductRow[],
+});
+interface Customer {
+  partnerid: string;
+  partnername: string;
+}
+
+interface Product {
+  productid: string;
+  productname: string;
+  unitprice: number;
+}
+
+interface ProductRow {
+  productId: string;
+  unitprice: number;
+  quantity: number;
+}
+const customers = ref<Customer[]>([]);
+const products = ref<Product[]>([]);
+const getCustomers = async () => {
+  try {
+    const response = await api.post('/partners/getpurchaseAll'); // 调用后端接口获取客户信息
+    customers.value = response.data; // 更新客户信息
+  } catch (error) {
+    console.error('获取客户信息失败:', error);
+  }
+};
+
+const handleCustomerSelect = (value: string) => {
+  const selectedCustomer = customers.value.find(customer => customer.partnername === value);
+  newOrder.value.orderparid = selectedCustomer ? selectedCustomer.partnerid : '';
+};
+
+
+
+const addProductRow = () => {
+  newOrder.value.selectedProducts.push({
+    productId: '',
+    unitprice: 0,
+    quantity: 0,
+  });
+};
+
+const removeProductRow = (index: number) => {
+  newOrder.value.selectedProducts.splice(index, 1);
+  updateOrderTotal();
+};
+
+const handleProductSelect = (index: number) => {
+  const selectedProduct = products.value.find(
+    product => product.productid === newOrder.value.selectedProducts[index].productId
+  );
+  if (selectedProduct) {
+    newOrder.value.selectedProducts[index].unitprice = selectedProduct.unitprice || 0;
+  }
+  updateOrderTotal();
+};
+
+const updateOrderTotal = () => {
+  newOrder.value.ordertotalamount = newOrder.value.selectedProducts.reduce(
+    (total, product) => total + product.unitprice * product.quantity,
+    0
+  );
+};
+
+
+const emptyProductRow = (): ProductRow => ({
+  productId: '',
+  unitprice: 0,
+  quantity: 0,
+});
+const openAddOrderDialog = () => {
+  newOrder.value.selectedProducts = [emptyProductRow()]; // 默认只添加一条空白产品行
+  addOrderDialogVisible.value = true; // 打开对话框
+};
+
+
+const handleAddOrder = async () => {
+  try {
+    await api.post('/purchaseorders/add', newOrder.value);
+    ElMessageBox.alert('订单新增成功！', '提示', {
+      confirmButtonText: '确定',
+      type: 'success',
+    });
+    addOrderDialogVisible.value = false;
+    newOrder.value = {
+      orderparid: '',
+      orderparname: '',
+      orderdate: '',
+      ordertotalamount: 0,
+      selectedProducts: [],
+    };
+    getPurchaseOrders();
+  } catch (error) {
+    console.error('新增订单失败:', error);
+  }
+};
+
 </script>
 
 <style scoped>
@@ -316,5 +488,40 @@ const formatAmount = (row: PurchaseOrder) => {
   border-radius: 5px;
   text-align: left;
   color: #333;
+}
+
+.add-order-button {
+  display: block;
+  width: 100%;
+  /* 与表格宽度一致 */
+  margin-bottom: 0;
+  /* 紧贴数据表格 */
+  border-radius: 0;
+  /* 无圆角 */
+  text-align: center;
+  font-weight: bold;
+  /* 使按钮文字更突出 */
+}
+
+.product-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  /* 控制表单项之间的间距 */
+  margin-bottom: 10px;
+  /* 产品行之间的间距 */
+}
+
+.form-item-inline {
+  flex: 1;
+  /* 每个表单项占据相等宽度 */
+  margin-bottom: 0;
+  /* 移除默认的垂直间距 */
+}
+
+.delete-btn {
+  margin-left: 10px;
+  align-self: flex-start;
+  /* 删除按钮与表单项顶部对齐 */
 }
 </style>
