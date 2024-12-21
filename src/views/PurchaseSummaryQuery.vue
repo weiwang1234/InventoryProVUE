@@ -155,14 +155,24 @@ const resetFilters = () => {
 
 // 导出数据
 const exportData = async () => {
+
+  if (!dateRange.value && (!customerName.value || customerName.value.trim() === '')) {
+    ElMessageBox.alert('请输入至少一个查询条件！', '提示', {
+      confirmButtonText: '确定',
+      type: 'warning',
+      lockScroll: false, // 允许页面滚动
+    });
+    return;
+  }
   try {
     const params = {
       startDate: dateRange.value ? dateRange.value[0] : null,
       endDate: dateRange.value ? dateRange.value[1] : null,
       customerName: customerName.value,
     };
+    const exportType = "orders"; // 替换为需要的导出类型，例如 "orders" 或 "users"
 
-    const response = await api.post('/purchase-summary/export', params, { responseType: 'blob' });
+    const response = await api.post(`/exports/${exportType}`, params, { responseType: 'blob' });
 
     const blob = new Blob([response.data], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
