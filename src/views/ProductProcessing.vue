@@ -44,6 +44,9 @@
         <el-dialog v-model="addProductDialogVisible" title="新增产品加工设置" width="60%">
             <el-form :model="newProduct" ref="form" label-width="100px">
                 <!-- 产品名称（选择框） -->
+                <el-form-item v-if="showProductId" label="产品ID">
+                    <el-input v-model="newProduct.productid" readonly style="width: 220px;" />
+                </el-form-item>
                 <el-form-item label="产品名称" :rules="[{ required: true, message: '请选择产品名称', trigger: 'blur' }]">
                     <el-select v-model="newProduct.productid" placeholder="请选择产品" @change="handleProductChange"
                         style="width: 220px;" filterable>
@@ -57,20 +60,28 @@
 
                 <el-table :data="selectedProducts" style="width: 100%" v-if="selectedProducts.length > 0">
                     <!-- 序号列 -->
-                    <el-table-column label="序号" width="80">
+                    <el-table-column label="序号" width="60">
                         <template v-slot="scope">
                             {{ scope.$index + 1 }}
                         </template>
                     </el-table-column>
 
-                    <!-- 产出产品名称列 -->
+                    <!-- 产品ID列 -->
+                    <el-table-column v-if="showProductId" label="产品ID">
+                        <template v-slot="scope">
+                            <el-input v-model="scope.row.opuputproudctid" placeholder="产品ID" readonly
+                                style="width: 150px;" />
+                        </template>
+                    </el-table-column>
+
                     <!-- 产出产品名称列 -->
                     <el-table-column label="产出产品名称">
                         <template v-slot="scope">
-                            <el-select v-model="scope.row.opuputproudctid" placeholder="请选择产出产品"
-                                @change="handleOutputProductChange(scope.row)" style="width: 220px;" filterable>
+                            <el-select v-model="scope.row.opuputproudctname" placeholder="请选择产出产品"
+                                @change="(value: string) => handleOutputProductChange(scope.row, value)"
+                                style="width: 150px;" filterable>
                                 <el-option v-for="outputProduct in outputProducts" :key="outputProduct.productid"
-                                    :label="outputProduct.productname" :value="outputProduct.productid" />
+                                    :label="outputProduct.productname" :value="outputProduct.productname" />
                             </el-select>
                         </template>
                     </el-table-column>
@@ -99,6 +110,8 @@
                         </template>
                     </el-table-column>
                 </el-table>
+
+
             </el-form>
 
             <span slot="footer" class="dialog-footer">
@@ -112,6 +125,10 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted } from 'vue'
 import api from '../api'
+import { ElMessage } from 'element-plus';
+import { ElMessageBox } from 'element-plus';
+
+
 
 const showProductId = ref(false) // 控制是否显示产品ID列
 
@@ -177,19 +194,27 @@ const getProducts = async () => {
     }
 };
 
-const handleOutputProductChange = (row: productprocessingconfigdetail) => {
-    console.log('选中的产出产品ID：', row.opuputproudctid);
-    // 可以根据需要做其他的业务逻辑处理，比如更新其他字段
-}
+const handleOutputProductChange = (row: productprocessingconfigdetail, value: string) => {
+    const selectedProduct = outputProducts.value.find(
+        (product) => product.productname === value
+    );
+    if (selectedProduct) {
+        row.opuputproudctid = selectedProduct.productid; // 自动赋值产品ID
+        console.log(`产出产品名称: ${value}, 对应的产品ID: ${selectedProduct.productid}`);
+    }
+};
+
 // 获取产出产品列表的方法
-const getOutputProducts = async () => {
+const getOutputProducts = async (productId: number) => {
     try {
-        const response = await api.post('/output-products/getAll'); // 替换为实际的后端接口
+        console.log(productId)
+        const response = await api.post(`/products/getproduct/${productId}`); // 动态传入 productId
+        console.log(response.data)
         outputProducts.value = response.data; // 将返回的数据赋值给响应式变量
     } catch (error) {
         console.error('获取产出产品列表失败:', error);
     }
-}
+};
 // 获取产品加工配置数据
 const getProductProcessing = async () => {
     try {
@@ -219,9 +244,26 @@ const currentPageData = computed(() => {
 
 // 处理产品选择变化
 const handleProductChange = (value: string) => {
-    console.log('选中的产品ID：', value)
-    // 在这里可以执行其他逻辑，比如更新其他字段或请求接口获取更多信息
-}
+    console.log('选中的产品ID：', value);
+
+    // 查找选中产品的详细信息
+    const selectedProduct = products.value.find(product => product.productid === value);
+    if (selectedProduct) {
+        console.log('选中的产品名称：', selectedProduct.productname); // 打印产品名称
+        newProduct.value.productname = selectedProduct.productname; // 更新产品名称到 newProduct
+    } else {
+        console.error('未找到匹配的产品名称');
+    }
+
+    const productId = Number(value); // 将选中的产品ID转为数字
+    if (!isNaN(productId)) {
+        getOutputProducts(productId); // 调用时传递 productId 参数
+    } else {
+        console.error('无效的产品ID：', value);
+    }
+
+    // 可以在这里执行其他逻辑，比如更新其他字段或请求更多信息
+};
 
 // 页面初始化时加载数据
 onMounted(() => {
@@ -243,24 +285,100 @@ const handleSearch = () => {
 // 新增产品
 const openAddProductDialog = () => {
     addProductDialogVisible.value = true
-    getOutputProducts();
 
 }
 
-// 处理新增产品的提交
 const handleAddProduct = async () => {
-    const isValid = await form.value?.validate()
-    if (!isValid) return
+    if (!newProduct.value.productid) {
+        ElMessageBox.alert('产品名称不能为空', '警告', {
+            confirmButtonText: '确定',
+            type: 'warning',
+            lockScroll: false, // 防止页面滚动条消失
+        });
+        return;
+    }
+
+    // 校验每一行的产出产品
+    for (let i = 0; i < selectedProducts.value.length; i++) {
+        const product = selectedProducts.value[i];
+
+        console.log(`第 ${i + 1} 行的产出产品名称：`, product.opuputproudctname);
+
+        if (newProduct.value.productid == product.opuputproudctid) {
+            ElMessageBox.alert(`第 ${i + 1} 行的产出产品不能与被加工的产品名称一致`, '警告', {
+                confirmButtonText: '确定',
+                type: 'warning',
+                lockScroll: false,
+            });
+            return;
+        }
+        if (!product.opuputproudctid) {
+            ElMessageBox.alert(`第 ${i + 1} 行的产出产品名称不能为空！`, '警告', {
+                confirmButtonText: '确定',
+                type: 'warning',
+                lockScroll: false,
+            });
+            return; // 终止操作
+        }
+        if (!product.outputtype) {
+            ElMessageBox.alert(`第 ${i + 1} 行的产出类型不能为空！`, '警告', {
+                confirmButtonText: '确定',
+                type: 'warning',
+                lockScroll: false,
+            });
+            return; // 终止操作
+        }
+        if (!product.outputcount) {
+            ElMessageBox.alert(`第 ${i + 1} 行的产出数量不能为空！`, '警告', {
+                confirmButtonText: '确定',
+                type: 'warning',
+                lockScroll: false,
+            });
+            return; // 终止操作
+        }
+    }
+
+    // 拼装报文
+    const payload = {
+        productprocessingconfig: {
+            productid: newProduct.value.productid,
+            productname: newProduct.value.productname,
+        },
+        productprocessingconfigdetail: selectedProducts.value.map(product => ({
+            productid: product.productid,
+            productname: product.productname,
+            opuputproudctid: product.opuputproudctid,
+            opuputproudctname: product.opuputproudctname,
+            outputtype: product.outputtype,
+            outputcount: product.outputcount,
+        })),
+    };
+
+    console.log('拼装后的请求报文：', payload);
 
     try {
-        const response = await api.post('/products/add', newProduct.value) // 调用新增产品接口
-        products.value.push(response.data) // 将新数据添加到列表
-        addProductDialogVisible.value = false
-        newProduct.value = { productid: '', productname: '', productstatus: 1 } // 清空产品数据，状态默认1
+        const response = await api.post('/product-processing-config/create', payload);
+        console.log('新增加工配置成功：', response.data);
+        ElMessage({
+            message: '新增加工配置成功！',
+            type: 'success',
+            duration: 2000,
+        });
+        // 重置表单和选中产品
+        addProductDialogVisible.value = false;
+        newProduct.value = { productid: '', productname: '', productstatus: 1 };
+        selectedProducts.value = [];
+        getProductProcessing() //  刷新产品列表
     } catch (error) {
-        console.error('新增产品失败:', error)
+        console.error('新增加工配置失败：', error);
+        ElMessage({
+            message: '新增加工配置失败，请稍后再试！',
+            type: 'error',
+            duration: 2000,
+        });
     }
-}
+};
+
 
 // 删除产品时确认
 const confirmDeleteProduct = async (productid: string) => {
@@ -282,6 +400,15 @@ const confirmDeleteProduct = async (productid: string) => {
 
 // 添加产品到产品列表
 const addProductToList = () => {
+
+    if (!newProduct.value.productid) {
+        ElMessage({
+            message: '请先选择产品！',
+            type: 'warning',
+            duration: 2000,
+        });
+        return;
+    }
     // 直接添加一行空的产品配置
     const newProcessing: productprocessingconfigdetail = {
         productid: '',  // 产品ID（可以为空）
@@ -295,7 +422,7 @@ const addProductToList = () => {
     // 将新空行添加到列表
     selectedProducts.value.push(newProcessing)
     // 重置输入框或选择（如果有输入框需要重置）
-    newProduct.value = { productid: '', productname: '', productstatus: 1 }
+    //newProduct.value = { productid: '', productname: '', productstatus: 1 }
 }
 
 // 删除产品从加工配置表格
