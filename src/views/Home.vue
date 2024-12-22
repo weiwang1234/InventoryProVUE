@@ -58,12 +58,16 @@
           </el-sub-menu>
 
           <!-- 产品管理菜单 -->
-          <el-menu-item index="3" @click="navigateTo('/home/product-management')">
-            <el-icon>
-              <DishDot />
-            </el-icon>
-            <span>产品管理</span>
-          </el-menu-item>
+          <el-sub-menu index="3">
+            <template #title>
+              <el-icon>
+                <DishDot />
+              </el-icon>
+              <span>产品管理</span>
+            </template>
+            <el-menu-item index="3-1" @click="navigateTo('/home/product-management')">产品列表</el-menu-item>
+            <el-menu-item index="3-2" @click="navigateTo('/home/product-processing')">产品加工设置</el-menu-item>
+          </el-sub-menu>
 
           <!-- 合作方管理菜单 -->
           <el-menu-item index="4" @click="navigateTo('/home/partner-management')">
@@ -137,13 +141,15 @@ watch(() => router.currentRoute.value.path, (newPath) => {
   if (newPath === '/home') {
     activeMenu.value = 'home'
   } else if (newPath === '/home/product-list') {
-    activeMenu.value = '1'
+    activeMenu.value = '3'
   } else if (newPath === '/home/inventory-query') {
     activeMenu.value = '2'
   } else if (newPath === '/home/product-management') {
     activeMenu.value = '3'
   } else if (newPath === '/home/partner-management') {
     activeMenu.value = '4'
+  } else if (newPath === '/home/product-processing') {
+    activeMenu.value = '3-2'
   }
 })
 

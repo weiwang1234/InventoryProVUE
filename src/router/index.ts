@@ -11,6 +11,8 @@ import Ordersquery from '../views/Ordersquery.vue'
 import inventoryquery from '../views/inventoryquery.vue'
 import PurchaseOrdersList from '../views/PurchaseOrdersList.vue'
 import PurchaseSummaryQuery from '../views/PurchaseSummaryQuery.vue'
+import ProductProcessing from '../views/ProductProcessing.vue'
+
 
 
 
@@ -78,6 +80,11 @@ const routes: RouteRecordRaw[] = [
         path: 'PurchaseSummary-Query',
         name: 'PurchaseSummaryQuery',
         component: PurchaseSummaryQuery,  // 产品列表页面
+      },
+      {
+        path: 'product-processing',
+        name: 'ProductProcessing',
+        component: ProductProcessing,  // 产品列表页面
       },
     ],
   },
