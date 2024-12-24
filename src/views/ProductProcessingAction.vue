@@ -66,6 +66,9 @@
               :value="product.productname" />
           </el-select>
         </el-form-item>
+        <el-form-item label="加工日期" :rules="[{ required: true, message: '请输入订单日期', trigger: 'blur' }]">
+          <el-date-picker v-model="formdd.processingdate" type="date" placeholder="请选择一个日期" />
+        </el-form-item>
 
         <el-form-item label="数量">
           <el-input v-model.number="formdd.quantity" placeholder="请输入数量" type="number" style="width: 220px;" />
@@ -84,8 +87,8 @@
 
           <el-table-column v-if="showorderid" prop="productid" label="产品ID" />
           <el-table-column v-if="showorderid" prop="productname" label="产品名称" />
-          <el-table-column v-if="showorderid" prop="opuputproudctid" label="产品ID" />
-          <el-table-column prop="opuputproudctname" label="产品名称" />
+          <el-table-column v-if="showorderid" prop="outputproductid" label="产品ID" />
+          <el-table-column prop="outputproductname" label="产品名称" />
           <el-table-column prop="outputtype" label="产出类型" />
           <el-table-column label="产出数量">
             <template v-slot="scope">
@@ -138,8 +141,8 @@ interface Product {
 interface OutputRow {
   productid: string;
   productname: string;
-  opuputproudctid: string;
-  opuputproudctname: string;
+  outputproductid: string;
+  outputproductname: string;
   outputtype: string;
   outputcount: number;
 }
@@ -147,13 +150,14 @@ interface OutputRow {
 interface FormData {
   productid: string;
   productname: string;
+  processingdate: string,
   quantity: number;
   outputRows: OutputRow[];
 }
-
 const formdd = ref<FormData>({
   productid: '',
   productname: '',
+  processingdate: '',
   quantity: 0,
   outputRows: [],  // 初始时有一行
 });
@@ -248,10 +252,36 @@ const handleProcessingClick = () => {
 };
 
 // 提交表单
-const submitForm = () => {
-  // 表单验证并提交处理
-  console.log('提交的产品加工信息:', formdd.value);
-  dialogVisible.value = false; // 关闭对话框
+const submitForm = async () => {
+  // 封装请求体
+  const productProcessingRequest = {
+    productprocessing: {
+      productid: formdd.value.productid,
+      productname: formdd.value.productname,
+      processingdate: formatDate(formdd.value.processingdate),
+      quantity: formdd.value.quantity,
+    },
+    productprocessingdetail: formdd.value.outputRows.map((row: any) => ({
+      productid: row.productid,
+      productname: row.productname,
+      outputproductid: row.outputproductid,
+      outputproductname: row.outputproductname,
+      outputtype: row.outputtype,
+      outputcount: row.outputcount,
+    })),
+  };
+
+  // 打印请求数据，检查是否符合后端要求
+  console.log('提交的产品加工信息:', productProcessingRequest);
+
+  try {
+    // 调用后端 API
+    const response = await api.post('/productprocessing/add', productProcessingRequest);
+    console.log('提交成功:', response.data);
+    dialogVisible.value = false; // 关闭对话框
+  } catch (error) {
+    console.error('提交失败:', error);
+  }
 };
 
 // 重置表单
@@ -286,11 +316,12 @@ const handleAutoConvert = () => {
     } else if (product.outputtype === '2') {
       calculatedOutputCount = product.outputcount
     }
+    console.log(product)
     formdd.value.outputRows.push({
       productid: product.productid,
       productname: product.productname,
-      opuputproudctid: product.opuputproudctid,
-      opuputproudctname: product.opuputproudctname,
+      outputproductid: product.outputproductid,
+      outputproductname: product.outputproductname,
       outputtype: product.outputtype || '', // 使用 productTypeList 中的 outputtype
       outputcount: calculatedOutputCount, // 使用计算后的 outputcount
     });
@@ -337,6 +368,7 @@ const getProductTypes = async () => {
     const response = await api.post('/productprocessingconfig/getDetails', null, {
       params: { productid } // 传递查询参数
     });
+    console.log(response.data);
 
     // 更新空数组的值
     productTypeList.value = response.data;  // 假设返回的数据格式是数组
@@ -346,7 +378,13 @@ const getProductTypes = async () => {
   }
 };
 
-
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr); // 解析 ISO 8601 格式的日期
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // 月份是从0开始的，需要加1并格式化为2位数
+  const day = String(date.getDate()).padStart(2, '0'); // 日期格式化为2位数
+  return `${year}-${month}-${day}`;
+}
 
 </script>
 

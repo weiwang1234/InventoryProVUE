@@ -56,7 +56,7 @@
                 <el-table-column v-if="showProductId" label="产品名称" prop="productname" />
 
                 <el-table-column v-if="showProductId" label="明细id" prop="configdetailid" />
-                <el-table-column label="产出产品名称" prop="opuputproudctname" />
+                <el-table-column label="产出产品名称" prop="outputproductname" />
                 <el-table-column label="产出类型">
                     <template v-slot="scope">
                         <span>{{ scope.row.outputtype === '1' ? '比例' : (scope.row.outputtype === '2' ? '数量' : '未知')
@@ -91,7 +91,7 @@
                     <el-input v-model="editedProduct.configdetailid" readonly placeholder="明细ID" />
                 </el-form-item>
                 <el-form-item label="产出产品名称" style="width: 260px;">
-                    <el-input v-model="editedProduct.opuputproudctname" readonly placeholder="请输入产出产品名称" />
+                    <el-input v-model="editedProduct.outputproductname" readonly placeholder="请输入产出产品名称" />
                 </el-form-item>
                 <el-form-item label="产出类型" style="width: 260px;">
                     <el-select v-model="editedProduct.outputtype" placeholder="请选择产出类型">
@@ -138,7 +138,7 @@
                     <!-- 产品ID列 -->
                     <el-table-column v-if="showProductId" label="产品ID">
                         <template v-slot="scope">
-                            <el-input v-model="scope.row.opuputproudctid" placeholder="产品ID" readonly
+                            <el-input v-model="scope.row.outputproductid" placeholder="产品ID" readonly
                                 style="width: 150px;" />
                         </template>
                     </el-table-column>
@@ -146,7 +146,7 @@
                     <!-- 产出产品名称列 -->
                     <el-table-column label="产出产品名称">
                         <template v-slot="scope">
-                            <el-select v-model="scope.row.opuputproudctname" placeholder="请选择产出产品"
+                            <el-select v-model="scope.row.outputproductname" placeholder="请选择产出产品"
                                 @change="(value: string) => handleOutputProductChange(scope.row, value)"
                                 style="width: 150px;" filterable>
                                 <el-option v-for="outputProduct in outputProducts" :key="outputProduct.productid"
@@ -217,8 +217,8 @@ interface productprocessingconfigdetail {
     configdetailid: string
     productid: string
     productname: string
-    opuputproudctid: string
-    opuputproudctname: string
+    outputproductid: string
+    outputproductname: string
     outputtype: string
     outputcount: string
 }
@@ -229,8 +229,8 @@ const selectedProducts = ref<productprocessingconfigdetail[]>([
         configdetailid: '',
         productid: '', // 默认空的产品ID
         productname: '', // 默认空的产品名称
-        opuputproudctid: '', // 默认空的产出产品ID
-        opuputproudctname: '', // 默认空的产出产品名称
+        outputproductid: '', // 默认空的产出产品ID
+        outputproductname: '', // 默认空的产出产品名称
         outputtype: '', // 默认空的产出类型
         outputcount: '', // 默认空的产出数量
     }
@@ -251,8 +251,8 @@ const editedProduct = ref<productprocessingconfigdetail>({
     configdetailid: '',
     productid: '',
     productname: '',
-    opuputproudctid: '',
-    opuputproudctname: '',
+    outputproductid: '',
+    outputproductname: '',
     outputtype: '',
     outputcount: ''
 });
@@ -289,7 +289,7 @@ const handleOutputProductChange = (row: productprocessingconfigdetail, value: st
         (product) => product.productname === value
     );
     if (selectedProduct) {
-        row.opuputproudctid = selectedProduct.productid; // 自动赋值产品ID
+        row.outputproductid = selectedProduct.productid; // 自动赋值产品ID
         console.log(`产出产品名称: ${value}, 对应的产品ID: ${selectedProduct.productid}`);
     }
 };
@@ -439,8 +439,8 @@ watch(() => addProductDialogVisible.value, (newVal) => {
                     configdetailid: '',  // 必须包含 configdetailid
                     productid: '',
                     productname: '',
-                    opuputproudctid: '',
-                    opuputproudctname: '',
+                    outputproductid: '',
+                    outputproductname: '',
                     outputtype: '',
                     outputcount: '',
                 }
@@ -460,7 +460,7 @@ const handleAddProduct = async () => {
     }
 
     // 确保至少有一行数据
-    if (selectedProducts.value.length === 0 || !selectedProducts.value[0].opuputproudctid) {
+    if (selectedProducts.value.length === 0 || !selectedProducts.value[0].outputproductid) {
         ElMessageBox.alert('请至少添加一行有效的产出产品', '警告', {
             confirmButtonText: '确定',
             type: 'warning',
@@ -473,9 +473,9 @@ const handleAddProduct = async () => {
     for (let i = 0; i < selectedProducts.value.length; i++) {
         const product = selectedProducts.value[i];
 
-        console.log(`第 ${i + 1} 行的产出产品名称：`, product.opuputproudctname);
+        console.log(`第 ${i + 1} 行的产出产品名称：`, product.outputproductname);
 
-        if (newProduct.value.productid == product.opuputproudctid) {
+        if (newProduct.value.productid == product.outputproductid) {
             ElMessageBox.alert(`第 ${i + 1} 行的产出产品不能与被加工的产品名称一致`, '警告', {
                 confirmButtonText: '确定',
                 type: 'warning',
@@ -483,7 +483,7 @@ const handleAddProduct = async () => {
             });
             return;
         }
-        if (!product.opuputproudctid) {
+        if (!product.outputproductid) {
             ElMessageBox.alert(`第 ${i + 1} 行的产出产品名称不能为空！`, '警告', {
                 confirmButtonText: '确定',
                 type: 'warning',
@@ -518,8 +518,8 @@ const handleAddProduct = async () => {
         productprocessingconfigdetail: selectedProducts.value.map(product => ({
             productid: product.productid,
             productname: product.productname,
-            opuputproudctid: product.opuputproudctid,
-            opuputproudctname: product.opuputproudctname,
+            outputproductid: product.outputproductid,
+            outputproductname: product.outputproductname,
             outputtype: product.outputtype,
             outputcount: product.outputcount,
         })),
@@ -611,8 +611,8 @@ const addProductToList = () => {
         configdetailid: '',
         productid: '',  // 产品ID（可以为空）
         productname: '',  // 产品名称（可以为空）
-        opuputproudctid: '',  // 可选产出产品ID
-        opuputproudctname: '',  // 可选产出产品名称
+        outputproductid: '',  // 可选产出产品ID
+        outputproductname: '',  // 可选产出产品名称
         outputtype: '',  // 可选产出类型
         outputcount: '',  // 可选产出数量
     }
