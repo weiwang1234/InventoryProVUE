@@ -66,7 +66,9 @@
               <span>产品管理</span>
             </template>
             <el-menu-item index="3-1" @click="navigateTo('/home/product-management')">产品列表</el-menu-item>
-            <el-menu-item index="3-2" @click="navigateTo('/home/product-processing')">产品加工设置</el-menu-item>
+            <el-menu-item index="3-2" @click="navigateTo('/home/ProductProcessing-Action')">产品加工</el-menu-item>
+            <el-menu-item index="3-3" @click="navigateTo('/home/product-processing')">产品加工设置</el-menu-item>
+            <!-- 新增产品加工菜单项 -->
           </el-sub-menu>
 
           <!-- 合作方管理菜单 -->
@@ -150,6 +152,8 @@ watch(() => router.currentRoute.value.path, (newPath) => {
     activeMenu.value = '4'
   } else if (newPath === '/home/product-processing') {
     activeMenu.value = '3-2'
+  } else if (newPath === '/home/product-processing-new') {
+    activeMenu.value = '3-3'
   }
 })
 
