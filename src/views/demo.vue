@@ -33,10 +33,8 @@
           {{ (currentPage - 1) * pageSize + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column v-if="showorderid" prop="productid" label="产品ID" width="80" />
+      <el-table-column prop="productid" label="产品ID" width="80" />
       <el-table-column prop="productname" label="产品名称" width="180" />
-      <el-table-column prop="processingdate" label="加工日期" width="180" />
-
       <el-table-column label="操作" width="200">
         <template v-slot="scope">
           <el-button plain @click="openProcessingDetailsDialog(scope.row.productid)">查看详情</el-button>
@@ -54,14 +52,13 @@
     <!-- 产品加工对话框 -->
     <el-dialog v-model="dialogVisible" title="产品加工" width="60%" @close="resetForm">
       <el-form :model="formdd" ref="form" label-width="100px">
-        <el-form-item v-if="showorderid" label="产品ID">
+        <el-form-item label="产品ID">
           <el-input v-model="formdd.productid" placeholder="请输入产品ID" style="width: 220px;" />
         </el-form-item>
 
         <!-- 产品名称选择框 -->
         <el-form-item label="产品名称">
-          <el-select v-model="formdd.productname" placeholder="请选择产品名称" style="width: 220px;" filterable
-            @change="handleProductChange">
+          <el-select v-model="formdd.productname" placeholder="请选择产品名称" style="width: 220px;" filterable>
             <el-option v-for="product in products" :key="product.productid" :label="product.productname"
               :value="product.productname" />
           </el-select>
@@ -82,11 +79,11 @@
             </template>
           </el-table-column>
 
-          <el-table-column v-if="showorderid" prop="productid" label="产品ID" />
-          <el-table-column v-if="showorderid" prop="productname" label="产品名称" />
-          <el-table-column v-if="showorderid" prop="opuputproudctid" label="产品ID" />
-          <el-table-column prop="opuputproudctname" label="产品名称" />
+          <el-table-column prop="productid" label="产品ID" />
+          <el-table-column prop="productname" label="产品名称" />
+
           <el-table-column prop="outputtype" label="产出类型" />
+
           <el-table-column label="产出数量">
             <template v-slot="scope">
               <el-input v-model="scope.row.outputcount" placeholder="请输入产出数量" type="number" style="width: 100px;" />
@@ -128,8 +125,6 @@ interface ProductProcessing {
   productid: string;
   productname: string;
   outputcount: string;
-  processingdate: string;
-
 }
 interface Product {
   productid: string;
@@ -138,8 +133,6 @@ interface Product {
 interface OutputRow {
   productid: string;
   productname: string;
-  opuputproudctid: string;
-  opuputproudctname: string;
   outputtype: string;
   outputcount: number;
 }
@@ -155,11 +148,15 @@ const formdd = ref<FormData>({
   productid: '',
   productname: '',
   quantity: 0,
-  outputRows: [],  // 初始时有一行
+  outputRows: [
+    {
+      productid: '',
+      productname: '',
+      outputtype: '',
+      outputcount: 0
+    }
+  ],  // 初始时有一行
 });
-
-const showorderid = ref(false) // 控制是否显示产品ID列
-
 const products = ref<Product[]>([]); // 存储产品列表
 
 const ProductProcessings = ref<ProductProcessing[]>([]); // 存储产品列表
@@ -195,7 +192,6 @@ const ProcessingActions = async () => {
 // 获取产品列表
 onMounted(async () => {
   ProcessingActions()
-  getproducts()
 });
 
 
@@ -260,93 +256,27 @@ const resetForm = () => {
 };
 // 自动转化按钮点击事件
 const handleAutoConvert = () => {
-  if (!formdd.value.productid) {
-    ElMessageBox.alert('请选择产品!', '警告', {
-      type: 'warning',
-    });
-    return; // 终止后续逻辑
-  }
-
-  if (formdd.value.quantity < 1) {
-    ElMessageBox.alert('请输入数量！', '警告', {
-      type: 'warning',
-    });
-    return; // 终止后续逻辑
-  }
   // 清空现有的 outputRows
   formdd.value.outputRows = [];
 
-
-
   // 根据 productTypeList 生成空行，并赋值
-  productTypeList.value.forEach(product => {
-    let calculatedOutputCount = product.outputcount || 0;
-    if (product.outputtype === '1') {
-      calculatedOutputCount = parseFloat((formdd.value.quantity * (product.outputcount || 0)).toFixed(2));
-    } else if (product.outputtype === '2') {
-      calculatedOutputCount = product.outputcount
-    }
+  productTypeList.forEach(product => {
     formdd.value.outputRows.push({
       productid: product.productid,
       productname: product.productname,
-      opuputproudctid: product.opuputproudctid,
-      opuputproudctname: product.opuputproudctname,
       outputtype: product.outputtype || '', // 使用 productTypeList 中的 outputtype
-      outputcount: calculatedOutputCount, // 使用计算后的 outputcount
+      outputcount: product.outputcount || 0, // 使用 productTypeList 中的 outputcount
     });
   });
 };
 
-// 当选择产品名称时，更新产品ID
-const handleProductChange = (selectedProductName: string) => {
-
-  const selectedProduct = products.value.find(product => product.productname === selectedProductName);
-  if (selectedProduct) {
-    formdd.value.productid = selectedProduct.productid;  // 根据产品名称更新产品ID
-  }
-  getProductTypes();
-
-};
-const getproducts = async () => {
-  try {
-    const response = await api.post('/productprocessingconfig/getAll', { searchQuery: searchQuery.value }) // 获取所有合作方
-    products.value = response.data // 更新响应式数组，确保页面会重新渲染
-  } catch (error) {
-    console.error('获取产品失败:', error)
-  }
-};
 
 
-const productTypeList = ref<any[]>([]);  // 定义一个空的响应式列表
-const getProductTypes = async () => {
-  try {
-    // 获取产品ID并确保其有效
-    const productid = parseInt(formdd.value.productid, 10);
 
-    console.log('www' + formdd.value.productid)
-
-    // 检查产品ID是否有效
-    if (isNaN(productid)) {
-      console.error('Invalid product ID:', formdd.value.productid);
-      return;  // 如果无效，提前退出函数
-    }
-
-    // 发起请求，传递 productid 参数
-    console.log('Product ID:', productid);
-
-    const response = await api.post('/productprocessingconfig/getDetails', null, {
-      params: { productid } // 传递查询参数
-    });
-
-    // 更新空数组的值
-    productTypeList.value = response.data;  // 假设返回的数据格式是数组
-
-  } catch (error) {
-    console.error('获取产品类型数据失败:', error);
-  }
-};
-
-
+const productTypeList = [
+  { productid: '1', productname: '产品A', outputtype: '类型1', outputcount: 50 },
+  { productid: '2', productname: '产品B', outputtype: '类型2', outputcount: 1 }
+];
 
 </script>
 
