@@ -100,8 +100,12 @@
           <el-table-column v-if="showorderid" prop="productname" label="产品名称" />
           <el-table-column v-if="showorderid" prop="outputproductid" label="产品ID" />
           <el-table-column prop="outputproductname" label="产品名称" />
-          <el-table-column prop="outputtype" label="产出类型" />
-          <el-table-column label="产出数量">
+          <el-table-column prop="outputtype" label="产出类型">
+            <template v-slot="scope">
+              <!-- 根据 outputtype 值显示不同的文本 -->
+              <span>{{ scope.row.outputtype === '1' ? '比例' : '数量' }}</span>
+            </template>
+          </el-table-column> <el-table-column label="产出数量">
             <template v-slot="scope">
               <el-input v-model="scope.row.outputcount" placeholder="请输入产出数量" type="number" style="width: 100px;" />
             </template>

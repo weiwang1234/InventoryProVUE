@@ -22,8 +22,11 @@
         </template>
       </el-table-column>
       <el-table-column prop="productname" label="产品名称" width="180" />
-      <el-table-column prop="quantity" label="库存量" width="130" />
-    </el-table>
+      <el-table-column prop="quantity" label="库存量" width="130">
+        <template v-slot="scope">
+          {{ scope.row.quantity.toFixed(2) }}
+        </template>
+      </el-table-column> </el-table>
 
     <!-- 分页 -->
     <el-pagination :current-page="currentPage" :page-size="pageSize" :total="filteredData.length"
