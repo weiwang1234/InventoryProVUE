@@ -13,10 +13,8 @@ import PurchaseOrdersList from '../views/PurchaseOrdersList.vue'
 import PurchaseSummaryQuery from '../views/PurchaseSummaryQuery.vue'
 import ProductProcessing from '../views/ProductProcessing.vue'
 import ProductProcessingAction from '../views/ProductProcessingAction.vue'
-
-
-
-
+import StockTaking from '../views/StockTaking.vue'
+import OtherExpenses from '../views/OtherExpenses.vue'
 
 
 
@@ -90,6 +88,16 @@ const routes: RouteRecordRaw[] = [
         path: 'ProductProcessing-Action',
         name: 'ProductProcessingAction',
         component: ProductProcessingAction,  // 产品列表页面
+      },
+      {
+        path: 'stock-taking',
+        name: 'StockTaking',
+        component: StockTaking,  // 产品列表页面
+      },
+      {
+        path: 'Other-Expenses',
+        name: 'OtherExpenses',
+        component: OtherExpenses,  // 产品列表页面
       },
     ],
   },

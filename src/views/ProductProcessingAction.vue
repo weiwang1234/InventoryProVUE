@@ -224,7 +224,7 @@ const handleSearch = async () => {
     const searchCriteria = {
       startDate: startDateformat, // 假设 formatDate 用于格式化日期
       endDate: endDateformat,
-      productname: searchQuery.value,  // 产品名称
+      name: searchQuery.value,  // 产品名称
     };
 
     console.log('查询条件:', searchCriteria);

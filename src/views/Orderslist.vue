@@ -35,7 +35,6 @@
       </el-table-column>
       <!-- <el-table-column prop="id" label="订单编号" width="180" /> -->
       <el-table-column v-if="showorderid" prop="orderid" label="产品ID" />
-
       <el-table-column v-if="showorderid" prop="orderparid" label="客户编号" width="180" />
       <el-table-column prop="orderparname" label="客户名称" width="180" />
       <el-table-column prop="ordertotalamount" label="订单金额" width="180">

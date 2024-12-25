@@ -44,6 +44,8 @@
             <el-menu-item index="1-2" @click="navigateTo('/home/Orders-query')">送货订单汇总查询</el-menu-item>
             <el-menu-item index="1-3" @click="navigateTo('/home/PurchaseOrders-list')">进货订单管理</el-menu-item>
             <el-menu-item index="1-4" @click="navigateTo('/home/PurchaseSummary-Query')">进货订单汇总查询</el-menu-item>
+            <el-menu-item index="1-" @click="navigateTo('/home/Other-Expenses')">其他支出订单管理</el-menu-item>
+
           </el-sub-menu>
 
           <!-- 月底盘账一级菜单 -->
@@ -52,9 +54,10 @@
               <el-icon>
                 <Document />
               </el-icon>
-              <span>月底盘账</span>
+              <span>月底盘点</span>
             </template>
-            <el-menu-item index="2-1" @click="navigateTo('/home/inventory-query')">当前库存查询</el-menu-item>
+            <el-menu-item index="2-1" @click="navigateTo('/home/stock-taking')">库存盘点</el-menu-item>
+            <el-menu-item index="2-2" @click="navigateTo('/home/profit-report')">盈利表</el-menu-item>
           </el-sub-menu>
 
           <!-- 产品管理菜单 -->
@@ -68,6 +71,8 @@
             <el-menu-item index="3-1" @click="navigateTo('/home/product-management')">产品列表</el-menu-item>
             <el-menu-item index="3-2" @click="navigateTo('/home/ProductProcessing-Action')">产品加工</el-menu-item>
             <el-menu-item index="3-3" @click="navigateTo('/home/product-processing')">产品加工设置</el-menu-item>
+            <el-menu-item index="3-4" @click="navigateTo('/home/inventory-query')">当前库存查询</el-menu-item>
+
             <!-- 新增产品加工菜单项 -->
           </el-sub-menu>
 
