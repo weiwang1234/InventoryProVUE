@@ -418,6 +418,8 @@ const getCustomers = async () => {
   try {
     const response = await api.post('/partners/getpurchaseAll'); // 调用后端接口获取客户信息
     customers.value = response.data; // 更新客户信息
+    console.log(response.data)
+
   } catch (error) {
     console.error('获取客户信息失败:', error);
   }
