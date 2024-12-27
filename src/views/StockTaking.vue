@@ -11,9 +11,6 @@
             <el-col :span="8" style="text-align: right;">
                 <el-date-picker v-model="searchDateRange" type="monthrange" format="YYYY-MM" start-placeholder="选择开始月份"
                     end-placeholder="选择结束月份" clearable style="width: 85%;" /> </el-col>
-            <el-col :span="4">
-                <el-input v-model="searchQuery" placeholder="请输入产品名称" clearable suffix-icon="el-icon-search" />
-            </el-col>
             <el-col :span="8">
                 <el-button type="primary" @click="handleSearch">查询</el-button>
                 <el-button @click="resetSearchFilters">重置</el-button>
@@ -29,9 +26,10 @@
                 </template>
             </el-table-column>
             <el-table-column prop="stockmonth" label="盘点月份" width="80" />
-            <el-table-column label="操作" width="120">
+            <el-table-column label="操作" width="300">
                 <template v-slot="scope">
                     <el-button plain @click="viewDetail(scope.row)">查看详情</el-button>
+                    <el-button type="primary" @click="downloadData(scope.row)">下载</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -235,7 +233,20 @@ const getInventories = async () => {
 
 
 // 查询
-const handleSearch = () => {
+const handleSearch = async () => {
+    const searchpama = {
+        startDate: searchDateRange.value && searchDateRange.value[0] ? formatDate(searchDateRange.value[0]) : null,
+        endDate: searchDateRange.value && searchDateRange.value[1] ? formatDate(searchDateRange.value[1]) : null,
+    };
+
+    try {
+        // 确保URL路径正确
+        const response = await api.post('/monthendstock/querySearch', searchpama);
+        inventories.value = response.data || [];
+        filteredData.value = inventories.value;  // 初始时显示所有盈利数据
+    } catch (error) {
+        console.error('获取盈利数据失败:', error);
+    }
     currentPage.value = 1;
     // 根据查询条件过滤数据
 };
@@ -296,6 +307,37 @@ const paginatedDetailData = computed(() => {
     const end = start + detailPageSize.value;
     return detailData.value.slice(start, end);
 });
+
+
+const downloadData = async (row: any) => {
+    try {
+
+        const params = {
+            stockmonth: row.stockmonth,
+        };
+        // 请求后端下载 Excel 文件
+        const exportType = "StockTaking"; // 替换为需要的导出类型，例如 "orders" 或 "users"
+
+        const response = await api.post(`/exports/${exportType}`, params, { responseType: 'blob' });
+
+        const blob = new Blob([response.data], {
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        const fileName = `${row.stockmonth}月进库存盘点明细.xlsx`;  // 文件名中添加 stockmonth
+
+        link.setAttribute('download', fileName);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error('下载失败:', error);
+    }
+}
+
 // 页面加载时初始化数据
 onMounted(() => {
     getInventories();

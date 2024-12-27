@@ -57,7 +57,7 @@
               <span>月底盘点</span>
             </template>
             <el-menu-item index="2-1" @click="navigateTo('/home/stock-taking')">库存盘点</el-menu-item>
-            <el-menu-item index="2-2" @click="navigateTo('/home/profit-report')">盈利表</el-menu-item>
+            <el-menu-item index="2-2" @click="navigateTo('/home/Profit-Statement')">盈利表</el-menu-item>
           </el-sub-menu>
 
           <!-- 产品管理菜单 -->

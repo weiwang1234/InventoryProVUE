@@ -15,6 +15,8 @@ import ProductProcessing from '../views/ProductProcessing.vue'
 import ProductProcessingAction from '../views/ProductProcessingAction.vue'
 import StockTaking from '../views/StockTaking.vue'
 import OtherExpenses from '../views/OtherExpenses.vue'
+import ProfitStatement from '../views/ProfitStatement .vue'
+
 
 
 
@@ -98,6 +100,11 @@ const routes: RouteRecordRaw[] = [
         path: 'Other-Expenses',
         name: 'OtherExpenses',
         component: OtherExpenses,  // 产品列表页面
+      },
+      {
+        path: 'Profit-Statement',
+        name: 'ProfitStatement',
+        component: ProfitStatement,  // 产品列表页面
       },
     ],
   },
