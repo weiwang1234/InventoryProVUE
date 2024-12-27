@@ -28,14 +28,74 @@
                     {{ (currentPage - 1) * pageSize + scope.$index + 1 }}
                 </template>
             </el-table-column>
-            <el-table-column prop="productid" label="产品ID" width="80" />
-            <el-table-column prop="productname" label="产品名称" width="180" />
-            <el-table-column prop="lastmonthinventory" label="上月库存" />
-            <el-table-column prop="monthPurchases" label="本月进货" />
-            <el-table-column prop="monthprocessedoutput" label="本月加工产出" />
-            <el-table-column prop="monthsoldquantity" label="本月卖出数量" />
-            <el-table-column prop="stockmonth" label="盘点月份" />
+            <el-table-column prop="stockmonth" label="盘点月份" width="80" />
+            <el-table-column label="操作" width="120">
+                <template v-slot="scope">
+                    <el-button plain @click="viewDetail(scope.row)">查看详情</el-button>
+                </template>
+            </el-table-column>
         </el-table>
+
+
+        <!-- 查看详情对话框 -->
+        <el-dialog v-model="dialogVisible" title="产品详细信息" width="80%">
+            <el-table :data="paginatedDetailData" style="width: 100%">
+                <el-table-column label="序号" type="index" width="80" />
+                <el-table-column v-if="showPartnerId" label="产品ID" prop="productid" />
+                <el-table-column label="产品名称" prop="productname" />
+                <el-table-column label="上月库存" prop="lastmonthinventory">
+                    <template #default="{ row }">
+                        {{ row.lastmonthinventory ? row.lastmonthinventory.toFixed(2) : '0.00' }}
+                    </template>
+                </el-table-column>
+
+                <el-table-column label="进货数量" prop="monthpurchases">
+                    <template #default="{ row }">
+                        {{ row.monthpurchases ? row.monthpurchases.toFixed(2) : '0.00' }}
+                    </template>
+                </el-table-column>
+
+                <el-table-column label="进货金额" prop="monthpurchasesamount">
+                    <template #default="{ row }">
+                        {{ row.monthpurchasesamount ? row.monthpurchasesamount.toFixed(2) : '0.00' }}
+                    </template>
+                </el-table-column>
+
+                <el-table-column label="被加工数量" prop="monthprocessing">
+                    <template #default="{ row }">
+                        {{ row.monthprocessing ? row.monthprocessing.toFixed(2) : '0.00' }}
+                    </template>
+                </el-table-column>
+
+                <el-table-column label="加工产出数量" prop="monthprocessedoutput">
+                    <template #default="{ row }">
+                        {{ row.monthprocessedoutput ? row.monthprocessedoutput.toFixed(2) : '0.00' }}
+                    </template>
+                </el-table-column>
+
+                <el-table-column label="卖出数量" prop="monthsoldquantity">
+                    <template #default="{ row }">
+                        {{ row.monthsoldquantity ? row.monthsoldquantity.toFixed(2) : '0.00' }}
+                    </template>
+                </el-table-column>
+
+                <el-table-column label="卖出金额" prop="monthsoldamount">
+                    <template #default="{ row }">
+                        {{ row.monthsoldamount ? row.monthsoldamount.toFixed(2) : '0.00' }}
+                    </template>
+                </el-table-column>
+
+                <el-table-column label="本月库存" prop="monthinventory">
+                    <template #default="{ row }">
+                        {{ row.monthinventory ? row.monthinventory.toFixed(2) : '0.00' }}
+                    </template>
+                </el-table-column>
+            </el-table>
+            <el-pagination :current-page="detailCurrentPage" :page-size="detailPageSize" :total="detailData.length"
+                @current-change="handleDetailPageChange" layout="prev, pager, next" background
+                class="pagination-dialog" />
+
+        </el-dialog>
 
         <!-- 分页 -->
         <el-pagination :current-page="currentPage" :page-size="pageSize" :total="filteredData.length"
@@ -73,6 +133,11 @@ const searchQuery = ref('');  // 搜索框：产品名称
 const searchDateRange = ref([null, null]);  // 搜索框：日期范围
 const inventoryCheckDialogVisible = ref(false);
 const selectedMonth = ref<string | null>(null);
+const dialogVisible = ref(false);
+const detailPageSize = ref(10); // 每页显示的条数
+const detailCurrentPage = ref(1); // 当前页码
+const detailData = ref<any[]>([]); // 详情数据
+const showPartnerId = ref(false) // 控制是否显示合作方ID列
 
 
 const openInventoryCheckDialog = () => {
@@ -151,12 +216,6 @@ const confirmInventoryCheck = async () => {
 
 
 interface Inventory {
-    productid: string;
-    productname: string;
-    lastmonthinventory: number;
-    monthPurchases: number;
-    monthprocessedoutput: number;
-    monthsoldquantity: number;
     stockmonth: string;
 }
 
@@ -166,7 +225,7 @@ const filteredData = ref<Inventory[]>([]);  // 存储经过查询筛选后的数
 // 获取库存数据
 const getInventories = async () => {
     try {
-        const response = await api.post('/inventory/getAll', { searchQuery: searchQuery.value });
+        const response = await api.post('/monthendstock/getAll', { searchQuery: searchQuery.value });
         inventories.value = response.data || [];
         filteredData.value = inventories.value;  // 初始时显示所有库存数据
     } catch (error) {
@@ -179,14 +238,6 @@ const getInventories = async () => {
 const handleSearch = () => {
     currentPage.value = 1;
     // 根据查询条件过滤数据
-    filteredData.value = inventories.value.filter((item) => {
-        const matchName = item.productname.includes(searchQuery.value);
-        const matchDateRange =
-            (!searchDateRange.value[0] || !searchDateRange.value[1]) ||
-            (new Date(item.stockmonth) >= new Date(searchDateRange.value[0]) &&
-                new Date(item.stockmonth) <= new Date(searchDateRange.value[1]));
-        return matchName && matchDateRange;
-    });
 };
 
 // 重置搜索条件
@@ -217,6 +268,34 @@ function formatDate(dateStr: string): string {
 }
 
 
+const viewDetail = async (row: any) => {
+    const stockmonth = row.stockmonth;  // 获取盘点月份
+
+    try {
+        // 使用 GET 请求请求后台数据，并将 stockMonth 作为 URL 参数
+        const response = await api.get(`/monthstockdetailstock/get/${stockmonth}`); // 调用后端接口
+
+        // 假设返回的数据是数组，可以直接赋值给 detailData
+        detailData.value = response.data;
+
+        // 打开弹框显示产品详情
+        dialogVisible.value = true;
+
+    } catch (error) {
+        // 捕获错误并显示提示
+        ElMessage.error('获取产品详情失败，请重试！');
+    }
+};
+
+const handleDetailPageChange = (page: number) => {
+    detailCurrentPage.value = page; // 更新当前页码
+};
+
+const paginatedDetailData = computed(() => {
+    const start = (detailCurrentPage.value - 1) * detailPageSize.value;
+    const end = start + detailPageSize.value;
+    return detailData.value.slice(start, end);
+});
 // 页面加载时初始化数据
 onMounted(() => {
     getInventories();
