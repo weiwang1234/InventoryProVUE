@@ -247,7 +247,7 @@ const handleCustomerSelect = (value: string) => {
 const resetSearchFilters = () => {
   searchQuery.value = ''; // 清空客户名称搜索框
   searchDateRange.value = null; // 清空日期范围
-  getOrders(); // 调用 API 获取全部订单
+  // getOrders(); // 调用 API 获取全部订单
 };
 
 
@@ -629,8 +629,35 @@ const updateProductId = (index: number, value: string) => {
     selectedRow.product.productid = value; // 更新产品 ID
   }
 };
-const refreshOrderList = () => {
-  getOrders(); // 调用获取订单列表的方法
+const refreshOrderList = async () => {
+  const startDate = searchDateRange.value ? searchDateRange.value[0] : '';
+  const endDate = searchDateRange.value ? searchDateRange.value[1] : '';
+
+  if (
+    (!searchDateRange.value || searchDateRange.value.length === 0) &&
+    (!searchQuery.value || searchQuery.value.trim() === '')
+  ) {
+    getOrders();
+    return;
+
+  }
+
+  // 构造查询条件
+  const searchCriteria = {
+    startDate: startDate ? formatDate(startDate) : null,
+    endDate: endDate ? formatDate(endDate) : null,
+    customerName: searchQuery.value || null, // 客户名称
+  };
+
+  console.log('查询条件:', searchCriteria);
+
+  // 调用后端接口
+  const response = await api.post('/orders/searchOrders', searchCriteria);
+  orderList.value = response.data || [];
+  currentPage.value = 1; // 重置到第一页
+
+
+
 };
 
 
