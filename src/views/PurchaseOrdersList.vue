@@ -427,7 +427,7 @@ const getCustomers = async () => {
 
 const getProducts = async () => {
   try {
-    const response = await api.post('/products/getAll'); // 调用后台接口获取产品列表
+    const response = await api.post('/products/getAllProductstatus'); // 调用后台接口获取产品列表
     products.value = response.data; // 更新响应式变量 products
   } catch (error) {
     console.error('获取产品列表失败:', error);

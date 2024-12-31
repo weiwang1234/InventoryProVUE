@@ -194,7 +194,7 @@ interface Order {
 // 获取产品列表
 const getProducts = async () => {
   try {
-    const response = await api.post('/products/getAll'); // 调用后端接口
+    const response = await api.post('/products/getAllProductstatus'); // 调用后端接口
     products.value = response.data; // 将返回的数据赋值给响应式变量
   } catch (error) {
     console.error('获取产品列表失败:', error);
@@ -254,7 +254,7 @@ const resetSearchFilters = () => {
 // 获取客户数据
 const getCustomers = async () => {
   try {
-    const response = await api.post('/partners/getAll', { searchQuery: searchQuery.value }) // 获取所有合作方
+    const response = await api.post('/partners/getAllOrderPartners', { searchQuery: searchQuery.value }) // 获取所有合作方
     customers.value = response.data // 更新响应式数组，确保页面会重新渲染
   } catch (error) {
     console.error('获取合作方数据失败:', error)

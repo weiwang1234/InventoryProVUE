@@ -29,12 +29,21 @@
       <el-table-column v-if="showPartnerId" prop="partnerid" label="合作方ID" />
       <el-table-column prop="partnername" label="合作方名称" width="180" />
       <el-table-column prop="partnerphone" label="合作方电话" width="180" />
-      <el-table-column prop="partnerstatus" label="合作方状态" width="180" />
       <el-table-column prop="partneraddress" label="合作方地址" width="200" />
-      <el-table-column prop="partnertype" label="合作方类型" width="180" />
-      <el-table-column label="操作" width="200">
+      <el-table-column label="合作方状态" width="180">
         <template v-slot="scope">
-          <el-button type="danger" @click="confirmDeletePartner(scope.row.partnerid)">删除</el-button>
+          <span>{{ scope.row.partnerstatus === '1' ? '有效' : '失效' }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="partnertype" label="合作方类型" width="180">
+        <template v-slot="scope">
+          <span>{{ scope.row.partnertype === '1' ? '送货方' : '进货方' }}</span>
+        </template>
+      </el-table-column> <el-table-column label="操作" width="200">
+        <template v-slot="scope">
+          <el-button type="danger" @click="confirmDeletePartner(scope.row.partnerid)">失效</el-button>
+          <el-button type="success" @click="confirmtakeeffectPartner(scope.row.partnerid)">生效</el-button>
+
         </template>
       </el-table-column>
     </el-table>
@@ -48,28 +57,28 @@
       <el-form :model="newPartner" ref="form" label-width="100px">
         <!-- 合作方名称 -->
         <el-form-item label="合作方名称" :rules="[{ required: true, message: '请输入合作方名称', trigger: 'blur' }]">
-          <el-input v-model="newPartner.partnername" />
+          <el-input v-model="newPartner.partnername" style="width: 300px;" />
         </el-form-item>
 
         <!-- 合作方电话 -->
         <el-form-item label="合作方电话" :rules="[{ required: true, message: '请输入合作方电话', trigger: 'blur' }]">
-          <el-input v-model="newPartner.partnerphone" />
+          <el-input v-model="newPartner.partnerphone" style="width: 300px;" />
         </el-form-item>
 
         <!-- 合作方状态 -->
         <el-form-item v-if="showPartnerId" label="合作方状态"
           :rules="[{ required: true, message: '请输入合作方状态', trigger: 'blur' }]">
-          <el-input v-model="newPartner.partnerstatus" :value="1" />
+          <el-input v-model="newPartner.partnerstatus" :value="1" style="width: 300px;" />
         </el-form-item>
 
         <!-- 合作方地址 -->
         <el-form-item label="合作方地址" :rules="[{ required: true, message: '请输入合作方地址', trigger: 'blur' }]">
-          <el-input v-model="newPartner.partneraddress" />
+          <el-input v-model="newPartner.partneraddress" style="width: 300px;" />
         </el-form-item>
 
         <!-- 合作方类型 -->
         <el-form-item label="合作方类型" :rules="[{ required: true, message: '请输入合作方类型', trigger: 'blur' }]">
-          <el-select v-model="newPartner.partnertype" placeholder="请选择合作方类型">
+          <el-select v-model="newPartner.partnertype" placeholder="请选择合作方类型" style="width: 300px;">
             <el-option label="送货方" value="1"></el-option>
             <el-option label="进货方" value="2"></el-option>
           </el-select>
@@ -87,6 +96,7 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted } from 'vue'
 import api from '../api'
+import { ElMessage } from 'element-plus'; // 使用 Element Plus 的消息提示组件
 
 const showPartnerId = ref(false) // 控制是否显示合作方ID列
 
@@ -123,6 +133,7 @@ const getPartners = async () => {
   try {
     const response = await api.post('/partners/getAll', { searchQuery: searchQuery.value }) // 获取所有合作方
     partners.value = response.data // 更新响应式数组，确保页面会重新渲染
+    console.log(response.data)
   } catch (error) {
     console.error('获取合作方数据失败:', error)
   }
@@ -171,6 +182,15 @@ const handleAddPartner = async () => {
   const isValid = await form.value?.validate()
   if (!isValid) return
 
+  const isExist = partners.value.some(partner => partner.partnername === newPartner.value.partnername);
+
+  if (isExist) {
+    // 如果存在相同名称的合作方，提示用户
+    ElMessage.error('合作方已存在');
+    return; // 退出，不进行新增操作
+  }
+
+
   try {
     console.log(newPartner.value);
     const response = await api.post('/partners/add', newPartner.value) // 调用新增合作方接口
@@ -184,12 +204,27 @@ const handleAddPartner = async () => {
 
 // 删除合作方时确认
 const confirmDeletePartner = async (partnerid: string) => {
-  if (window.confirm('确定要删除这个合作方吗？')) {
+  if (window.confirm('确定要失效这个合作方吗？')) {
     try {
       const partner = { partnerid: parseInt(partnerid, 10) }
-      api.post('/partners/delete', partner) // 调用删除接口
-      partners.value = partners.value.filter(partner => partner.partnerid !== partnerid) // 更新前端数据
+      await api.post('/partners/delete', partner) // 调用删除接口
+      // partners.value = partners.value.filter(partner => partner.partnerid !== partnerid) // 更新前端数据
       console.log('合作方已删除')
+      getPartners()
+    } catch (error) {
+      console.error('删除合作方失败:', error)
+    }
+  }
+}
+
+const confirmtakeeffectPartner = async (partnerid: string) => {
+  if (window.confirm('确定要生效这个合作方吗？')) {
+    try {
+      const partner = { partnerid: parseInt(partnerid, 10) }
+      await api.post('/partners/takeeffectPartner', partner) // 调用删除接口
+      // partners.value = partners.value.filter(partner => partner.partnerid !== partnerid) // 更新前端数据
+      console.log('合作方已删除')
+      getPartners()
     } catch (error) {
       console.error('删除合作方失败:', error)
     }

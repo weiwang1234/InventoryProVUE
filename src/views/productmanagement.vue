@@ -28,9 +28,16 @@
       </el-table-column>
       <el-table-column v-if="showProductId" prop="productid" label="产品ID" />
       <el-table-column prop="productname" label="产品名称" width="180" />
+      <el-table-column label="产品状态" width="180">
+        <template v-slot="scope">
+          <span>{{ scope.row.productstatus === '1' ? '有效' : '失效' }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" width="200">
         <template v-slot="scope">
-          <el-button type="danger" @click="confirmDeleteProduct(scope.row.productid)">删除</el-button>
+          <el-button type="danger" @click="confirmDeleteProduct(scope.row.productid)">失效</el-button>
+          <el-button type="success" @click="confirmtakeeffectPartner(scope.row.productid)">生效</el-button>
+
         </template>
       </el-table-column>
     </el-table>
@@ -61,6 +68,7 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted } from 'vue'
 import api from '../api'
+import { ElMessage } from 'element-plus'; // 使用 Element Plus 的消息提示组件
 
 const showProductId = ref(false) // 控制是否显示产品ID列
 
@@ -139,6 +147,14 @@ const handleAddProduct = async () => {
   const isValid = await form.value?.validate()
   if (!isValid) return
 
+
+  const isExist = products.value.some(partner => partner.productname === newProduct.value.productname);
+  if (isExist) {
+    // 如果存在相同名称的合作方，提示用户
+    ElMessage.error('产品存在');
+    return; // 退出，不进行新增操作
+  }
+
   try {
     const response = await api.post('/products/add', newProduct.value) // 调用新增产品接口
     products.value.push(response.data) // 将新数据添加到列表
@@ -161,13 +177,32 @@ const confirmDeleteProduct = async (productid: string) => {
     try {
       console.log(productid)
       await api.post('/products/delete', Product) // 传递完整的产品对象
-      products.value = products.value.filter(product => product.productid !== productid) // 更新前端数据
+      // products.value = products.value.filter(product => product.productid !== productid) // 更新前端数据
+      getProducts()
       console.log('产品已删除')
     } catch (error) {
     }
   }
 }
 
+
+const confirmtakeeffectPartner = async (productid: string) => {
+  if (window.confirm('确定要生效这个合作方吗？')) {
+    const Product = {
+      productid: parseInt(productid, 10),
+      productname: '',  // 如果不需要可以留空或提供默认值
+      productstatus: '', // 默认状态，或者留空
+    }
+    try {
+      await api.post('/products/takeeffectPartner', Product) // 调用删除接口
+      // partners.value = partners.value.filter(partner => partner.partnerid !== partnerid) // 更新前端数据
+      getProducts()
+      console.log('合作方已删除')
+    } catch (error) {
+      console.error('删除合作方失败:', error)
+    }
+  }
+}
 </script>
 
 <style scoped>
