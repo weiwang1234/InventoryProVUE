@@ -158,7 +158,7 @@ const confirmInventoryCheck = async () => {
             stockmonth: formattedDate // 假设 MonthendStock 对象包含 stockMonth 字段
         };
 
-        const response = await api.post('/monthendstock/check', monthendstock, {
+        const response = await api.post('/monthendstock/getByStockmonth', monthendstock, {
             headers: {
                 'Content-Type': 'application/json'
             }
@@ -199,7 +199,7 @@ const confirmInventoryCheck = async () => {
                 // 用户点击了继续，执行后续操作
                 console.log(response.data);
                 // 执行盘点操作逻辑
-                ElMessage.success(`盘点月份已选择：${selectedMonth.value}`);
+                ElMessage.success(formattedDate + "盘点完成！");
                 inventoryCheckDialogVisible.value = false;
             }).catch(() => {
                 // 用户点击了取消，不做任何操作
