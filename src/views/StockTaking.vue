@@ -163,8 +163,8 @@ const confirmInventoryCheck = async () => {
                 'Content-Type': 'application/json'
             }
         });
-
-        if (response.data === '记录不存在') {
+        console.log(response.data.success)
+        if (response.data.success === false) {
 
             const response = await api.post('/monthstockdetailstock/create', monthendstock, {
                 headers: {
