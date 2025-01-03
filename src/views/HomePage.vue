@@ -57,27 +57,46 @@
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
 import * as echarts from 'echarts'
+import api from '../api';
+
+const inventoryData = ref([]);  // 用于存储库存数据
+const salesData = ref([]);  // 用于存储库存数据
+
+const dailySalesAmount = ref(0);
+const monthlySalesAmount = ref(0);
+const dailyPurchaseAmount = ref(0);
+const monthlyPurchaseAmount = ref(0);
+
 
 // 模拟的销售数据（包括销售和进货金额）
-const salesData = [
-  { date: '2024-01-01', sales: 500, purchase: 300 },
-  { date: '2024-01-02', sales: 700, purchase: 500 },
-  { date: '2024-01-03', sales: 400, purchase: 200 },
-  { date: '2024-01-04', sales: 800, purchase: 600 },
-  { date: '2024-01-05', sales: 600, purchase: 400 },
-]
-
-// 计算日销售总金额和月销售总金额（这里简化为直接相加）
-const dailySalesAmount = salesData.reduce((acc, item) => acc + item.sales, 0)
-const monthlySalesAmount = salesData.reduce((acc, item) => acc + item.sales, 0)  // 假设是当天的数据，实际场景中可能需要按月份聚合
-
-// 计算日进货总金额和月进货总金额
-const dailyPurchaseAmount = salesData.reduce((acc, item) => acc + item.purchase, 0)
-const monthlyPurchaseAmount = salesData.reduce((acc, item) => acc + item.purchase, 0)  // 同样可以按月份聚合
+// const salesData = [
+//   { date: '2024-01-01', sales: 500, purchase: 300 },
+//   { date: '2024-01-02', sales: 700, purchase: 500 },
+//   { date: '2024-01-03', sales: 400, purchase: 200 },
+//   { date: '2024-01-04', sales: 800, purchase: 600 },
+//   { date: '2024-01-05', sales: 600, purchase: 400 },
+// ]
 
 // ECharts 配置和数据处理
 const salesChart = ref(null)
 const inventoryChart = ref(null)
+
+const fetchDailySalesAmount = async () => {
+  try {
+    const response = await api.post('/orders/getHomepageSum', { /* 可以传递查询条件 */ });
+    console.log(response.data)
+
+    dailySalesAmount.value = response.data.dailySalesAmount || 0;
+    monthlySalesAmount.value = response.data.monthlySalesAmount || 0;
+    dailyPurchaseAmount.value = response.data.dailyPurchaseAmount || 0;
+    monthlyPurchaseAmount.value = response.data.monthlyPurchaseAmount || 0;
+    salesData.value = response.data.salesStatistics || [];  // 如果需要销售统计数据
+    console.log(salesData.value)
+    inventoryData.value = response.data.inventory || [];  // 假设库存数据在此
+  } catch (error) {
+    console.error('获取销售数据失败', error);
+  }
+};
 
 const initCharts = () => {
   nextTick(() => {
@@ -97,7 +116,7 @@ const initCharts = () => {
       },
       xAxis: {
         type: 'category',
-        data: salesData.map(item => item.date),
+        data: salesData.value.map(item => item.date),
       },
       yAxis: {
         type: 'value',
@@ -106,26 +125,25 @@ const initCharts = () => {
         {
           name: '销售',
           type: 'line',
-          data: salesData.map(item => item.sales),
+          data: salesData.value.map(item => item.sales),
         },
         {
           name: '进货',
           type: 'line',
-          data: salesData.map(item => item.purchase),
+          data: salesData.value.map(item => item.purchase),
         },
       ],
     })
 
     // 产品库存柱状图配置
-    const inventoryData = [
-      { product: '产品A', stock: 120 },
-      { product: '产品B', stock: 80 },
-      { product: '产品C', stock: 150 },
-      { product: '产品D', stock: 200 },
-      { product: '产品E', stock: 5 },
+    // const inventoryData = [
+    //   { product: '产品A', stock: 120 },
+    //   { product: '产品B', stock: 80 },
+    //   { product: '产品C', stock: 150 },
+    //   { product: '产品D', stock: 200 },
+    //   { product: '产品E', stock: 5 },
 
-    ]
-
+    // ]
     inventoryChartInstance.setOption({
       title: {
         text: '产品库存柱状图',
@@ -135,7 +153,7 @@ const initCharts = () => {
       },
       xAxis: {
         type: 'category',
-        data: inventoryData.map(item => item.product),
+        data: inventoryData.value.map(item => item.productname),
       },
       yAxis: {
         type: 'value',
@@ -144,14 +162,13 @@ const initCharts = () => {
         {
           name: '库存',
           type: 'bar',
-          data: inventoryData.map(item => item.stock),
+          data: inventoryData.value.map(item => item.quantity),
           itemStyle: {
-            // 使用颜色映射
+            // 使用 itemStyle 来动态设置每个柱状图的颜色
             normal: {
               color: (params) => {
-                const stock = inventoryData[params.dataIndex].stock
-                // 如果库存小于 10，使用红色
-                return stock < 10 ? '#FF4D4F' : '#1f77b4'
+                // 判断 quantity 值，若小于 10 则为红色，大于等于 10 则为蓝色
+                return params.data < 10 ? '#F56C6C' : '#0052D9'; // Element Plus 红色和蓝色
               }
             }
           }
@@ -162,8 +179,10 @@ const initCharts = () => {
 }
 
 onMounted(() => {
-  initCharts()
-})
+  fetchDailySalesAmount().then(() => {
+    initCharts();
+  });
+});
 </script>
 
 <style scoped>
