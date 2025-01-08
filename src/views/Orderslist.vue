@@ -151,7 +151,7 @@
 
       <span slot="footer" class="dialog-footer">
         <el-button @click="addOrderDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleAddOrder">确定</el-button>
+        <el-button type="primary" @click="handleAddOrder" :disabled="isSubmitting">确定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -224,6 +224,7 @@ const removeProductRow = (index: number) => {
 const searchDateRange = ref<string[] | null>(null);
 
 
+const isSubmitting = ref(false)
 
 
 const products = ref<Product[]>([]); // 从后端动态获取数据
@@ -361,6 +362,7 @@ const handlePageChange = (page: number) => {
 }
 
 const openAddOrderDialog = () => {
+  isSubmitting.value = false; // 设置按钮禁用状态
   addOrderDialogVisible.value = true
 }
 
@@ -402,6 +404,9 @@ const handleAddOrder = async () => {
         return;
       }
     }
+    if (isSubmitting.value) return;  // 如果正在提交，则不再执行
+
+    isSubmitting.value = true; // 设置按钮禁用状态
 
     // 整理需要发送的订单数据
     const orderData = {

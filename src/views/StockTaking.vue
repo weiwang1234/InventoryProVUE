@@ -122,8 +122,7 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted } from 'vue';
 import api from '../api';
-import { ElMessage } from 'element-plus';
-import { ElMessageBox } from 'element-plus';
+import { ElMessageBox, ElLoading, ElMessage } from 'element-plus';
 
 const currentPage = ref(1);
 const pageSize = ref(10);
@@ -136,6 +135,7 @@ const detailPageSize = ref(10); // 每页显示的条数
 const detailCurrentPage = ref(1); // 当前页码
 const detailData = ref<any[]>([]); // 详情数据
 const showPartnerId = ref(false) // 控制是否显示合作方ID列
+const loadingInstance = ref<any>(null);
 
 
 const openInventoryCheckDialog = () => {
@@ -166,13 +166,24 @@ const confirmInventoryCheck = async () => {
         console.log(response.data.success)
         if (response.data.success === false) {
 
+            loadingInstance.value = ElLoading.service({
+                text: '盘点中，请稍等...',
+                spinner: 'el-icon-loading',
+                background: 'rgba(0, 0, 0, 0.7)',
+            });
+
             const response = await api.post('/monthstockdetailstock/create', monthendstock, {
                 headers: {
                     'Content-Type': 'application/json'
                 }
             });
-
             console.log(response.data);
+            ElMessage.success(formattedDate + "盘点完成！");
+            loadingInstance.value.close();
+            inventoryCheckDialogVisible.value = false;
+            getInventories();
+
+
 
 
 
@@ -190,6 +201,11 @@ const confirmInventoryCheck = async () => {
                 }
             ).then(async () => {
 
+                loadingInstance.value = ElLoading.service({
+                    text: '盘点中，请稍等...',
+                    spinner: 'el-icon-loading',
+                    background: 'rgba(0, 0, 0, 0.7)',
+                });
 
                 const response = await api.post('/monthstockdetailstock/create', monthendstock, {
                     headers: {
@@ -200,6 +216,8 @@ const confirmInventoryCheck = async () => {
                 console.log(response.data);
                 // 执行盘点操作逻辑
                 ElMessage.success(formattedDate + "盘点完成！");
+                loadingInstance.value.close();
+
                 inventoryCheckDialogVisible.value = false;
             }).catch(() => {
                 // 用户点击了取消，不做任何操作
@@ -318,6 +336,11 @@ const downloadData = async (row: any) => {
         // 请求后端下载 Excel 文件
         const exportType = "StockTaking"; // 替换为需要的导出类型，例如 "orders" 或 "users"
 
+        loadingInstance.value = ElLoading.service({
+            text: '下载中，请稍等...',
+            spinner: 'el-icon-loading',
+            background: 'rgba(0, 0, 0, 0.7)',
+        });
         const response = await api.post(`/exports/${exportType}`, params, { responseType: 'blob' });
 
         const blob = new Blob([response.data], {
@@ -333,6 +356,8 @@ const downloadData = async (row: any) => {
         link.click();
         link.remove();
         URL.revokeObjectURL(url);
+        loadingInstance.value.close();
+
     } catch (error) {
         console.error('下载失败:', error);
     }

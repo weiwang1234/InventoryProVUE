@@ -121,7 +121,7 @@
 
         <div slot="footer" class="dialog-footer">
           <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="submitForm">确定</el-button>
+          <el-button type="primary" @click="submitForm" :disabled="isSubmitting">确定</el-button>
         </div>
       </el-form>
     </el-dialog>
@@ -139,7 +139,7 @@ const currentPage = ref(1);
 const pageSize = ref(10);
 const searchQuery = ref('');  // 搜索框：产品名称
 const dialogVisible = ref(false);  // 控制对话框的显示与隐藏
-
+const isSubmitting = ref(false)
 
 interface ProductProcessing {
   processingid: string;
@@ -355,6 +355,7 @@ const resetSearchFilters = () => {
 
 // 处理产品加工按钮点击事件
 const handleProcessingClick = () => {
+  isSubmitting.value = false; // 设置按钮禁用状态
   dialogVisible.value = true; // 显示对话框
 };
 
@@ -402,6 +403,11 @@ const submitForm = async () => {
     cancelButtonText: '重新检查',
   })
 
+  if (isSubmitting.value) return;  // 如果正在提交，则不再执行
+
+  isSubmitting.value = true; // 设置按钮禁用状态
+
+
   const productProcessingRequest = {
     productprocessing: {
       productid: formdd.value.productid,
@@ -423,6 +429,8 @@ const submitForm = async () => {
   console.log('提交的产品加工信息:', productProcessingRequest);
 
   try {
+
+
     // 调用后端 API
     const response = await api.post('/productprocessing/add', productProcessingRequest);
     console.log('提交成功:', response.data);

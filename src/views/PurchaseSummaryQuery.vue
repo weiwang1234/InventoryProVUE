@@ -77,7 +77,7 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue';
 import api from '../api';
-import { ElMessageBox } from 'element-plus';
+import { ElMessageBox, ElLoading } from 'element-plus';
 
 // 查询条件和表格数据
 const dateRange = ref<[string, string] | null>(null);
@@ -89,6 +89,7 @@ const dialogVisible = ref(false);
 const orderDetails = ref<{ productName: string; quantity: number; unitPrice: number }[]>([]);
 const orderDetailsPage = ref(1); // 当前页
 const orderDetailsPageSize = ref(5); // 每页显示 5 条订单详情
+const loadingInstance = ref<any>(null);
 
 
 
@@ -171,6 +172,11 @@ const exportData = async () => {
       customerName: customerName.value,
     };
     const exportType = "orders"; // 替换为需要的导出类型，例如 "orders" 或 "users"
+    loadingInstance.value = ElLoading.service({
+      text: '正在导出，请稍等...',
+      spinner: 'el-icon-loading',
+      background: 'rgba(0, 0, 0, 0.7)',
+    });
 
     const response = await api.post(`/exports/${exportType}`, params, { responseType: 'blob' });
 
@@ -185,6 +191,8 @@ const exportData = async () => {
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
+    loadingInstance.value.close();
+
   } catch (error) {
     console.error('导出数据失败:', error);
   }

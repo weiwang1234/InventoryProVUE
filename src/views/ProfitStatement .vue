@@ -71,11 +71,14 @@
 
 <script lang="ts" setup>
 import { ref, computed, onMounted } from 'vue';
+import { ElLoading } from 'element-plus';
+
 import api from '../api';
 
 const currentPage = ref(1);
 const pageSize = ref(10);
 const searchDateRange = ref([null, null]);  // 搜索框：日期范围
+const loadingInstance = ref<any>(null);
 
 interface ProfitStatement {
   productid: string;
@@ -157,6 +160,11 @@ const downloadData = async (row: any) => {
     // const exportType = "StockTaking"; // 替换为需要的导出类型，例如 "orders" 或 "users"
 
     console.log(params);
+    loadingInstance.value = ElLoading.service({
+      text: '下载中，请稍等...',
+      spinner: 'el-icon-loading',
+      background: 'rgba(0, 0, 0, 0.7)',
+    });
     const response = await api.post('/exports/ProfitStatement', params, { responseType: 'blob' });
 
     const blob = new Blob([response.data], {
@@ -172,6 +180,8 @@ const downloadData = async (row: any) => {
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
+    loadingInstance.value.close();
+
   } catch (error) {
     console.error('下载失败:', error);
   }
@@ -205,7 +215,7 @@ onMounted(() => {
   bottom: 0;
   left: 0;
   width: 100%;
-  background-color: #ffffff;
+  background-color: #4933db;
   padding: 10px 0;
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
   z-index: 10;

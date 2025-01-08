@@ -136,7 +136,7 @@
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="addOrderDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleAddOrder">确定</el-button>
+        <el-button type="primary" @click="handleAddOrder" :disabled="isSubmitting">确定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -171,6 +171,8 @@ const dialogCurrentPageData = computed(() => {
   const end = start + pageSize.value;
   return orderDetailData.value.slice(start, end);
 });
+const isSubmitting = ref(false)
+
 // 查看订单详情
 const viewDetails = async (orderid: string) => {
   try {
@@ -488,12 +490,14 @@ const emptyProductRow = (): ProductRow => ({
 
 });
 const openAddOrderDialog = () => {
+  isSubmitting.value = false; // 设置按钮禁用状态
   newOrder.value.selectedProducts = [emptyProductRow()]; // 默认只添加一条空白产品行
   addOrderDialogVisible.value = true; // 打开对话框
 };
 
 
 const handleAddOrder = async () => {
+
   if (!newOrder.value.orderparid || !newOrder.value.orderparname) {
     ElMessageBox.alert('请选择完整的客户信息！', '提示', {
       confirmButtonText: '确定',
@@ -541,6 +545,9 @@ const handleAddOrder = async () => {
       return;
     }
   }
+  if (isSubmitting.value) return;  // 如果正在提交，则不再执行
+
+  isSubmitting.value = true; // 设置按钮禁用状态
 
   try {
     const formattedOrderDate = formatDate(newOrder.value.orderdate);

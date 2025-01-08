@@ -76,7 +76,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="closeAddExpenseDialog">取 消</el-button>
-        <el-button type="primary" @click="saveExpense">确定</el-button>
+        <el-button type="primary" @click="saveExpense" :disabled="isSubmitting">确定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -106,6 +106,7 @@ interface OtherExpense {
 
 const otherExpenses = ref<OtherExpense[]>([]);  // 存储所有其他支出数据
 const filteredData = ref<OtherExpense[]>([]);  // 存储经过查询筛选后的数据
+const isSubmitting = ref(false)
 
 // 控制新增支出对话框的显示
 const addExpenseDialogVisible = ref(false);
@@ -235,6 +236,7 @@ const deleteExpense = async (id: number) => {
 
 // 打开新增支出对话框
 const openAddExpenseDialog = () => {
+  isSubmitting.value = false; // 设置按钮禁用状态
   addExpenseDialogVisible.value = true;
 };
 
@@ -273,6 +275,10 @@ const saveExpense = async () => {
     });
     return;
   }
+
+  if (isSubmitting.value) return;  // 如果正在提交，则不再执行
+
+  isSubmitting.value = true; // 设置按钮禁用状态
 
 
   try {

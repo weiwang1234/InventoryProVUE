@@ -92,7 +92,7 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted } from 'vue';
 import api from '../api';
-import { ElMessageBox } from 'element-plus';
+import { ElMessageBox, ElLoading } from 'element-plus';
 
 interface Order {
   orderid: string;
@@ -118,6 +118,7 @@ const pageSize = ref(10); // 每页显示条数
 const dateRange = ref<[string, string] | null>(null); // 日期范围
 const customerName = ref(''); // 客户名称
 const queryExecuted = ref(false); // 是否执行过查询
+const loadingInstance = ref<any>(null);
 
 // 获取订单数据
 const getOrders = async () => {
@@ -230,6 +231,12 @@ const exportData = async () => {
       orderparname: customerName.value,
     };
 
+    loadingInstance.value = ElLoading.service({
+      text: '正在导出，请稍等...',
+      spinner: 'el-icon-loading',
+      background: 'rgba(0, 0, 0, 0.7)',
+    });
+
     // 向后端发送请求，生成 Excel 文件
     const response = await api.post('/exports/exportordersquery', sWhere, { responseType: 'blob' });
 
@@ -247,6 +254,8 @@ const exportData = async () => {
     // 移除链接并释放 URL
     link.remove();
     URL.revokeObjectURL(url);
+    loadingInstance.value.close();
+
   } catch (error) {
     console.error('导出 Excel 数据失败:', error);
   }
