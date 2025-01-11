@@ -49,7 +49,8 @@
     </el-table>
 
 
-    <el-dialog v-model="dialogVisible" title="订单详情" width="60%">
+    <el-dialog v-model="dialogVisible" title="订单详情" width="60%" :modal="true" :lock-scroll="false"
+      :close-on-click-modal="false" :close-on-press-escape="false">
       <el-table :data="orderDetailsPageData" style="width: 100%">
         <el-table-column prop="productName" label="产品名称" />
         <el-table-column prop="quantity" label="数量" />

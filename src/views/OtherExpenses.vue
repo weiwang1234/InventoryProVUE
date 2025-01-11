@@ -52,7 +52,8 @@
       @current-change="handlePageChange" layout="total, prev, pager, next, jumper" background class="pagination" />
 
     <!-- 新增支出的对话框 -->
-    <el-dialog v-model="addExpenseDialogVisible" title="新增支出" width="40%">
+    <el-dialog v-model="addExpenseDialogVisible" title="新增支出" width="40%" :modal="true" :lock-scroll="false"
+      :close-on-click-modal="false" :close-on-press-escape="false">
       <el-form :model="newExpense" ref="form" label-width="100px">
         <el-form-item label="支出名称" prop="otherexpensesname"
           :rules="[{ required: true, message: '请输入支出名称', trigger: 'blur' }]">

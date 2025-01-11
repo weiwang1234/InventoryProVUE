@@ -61,7 +61,8 @@
         总金额汇总: {{ totalAmountSummary.toFixed(2) }}
       </div>
       <!-- 订单详情对话框 -->
-      <el-dialog v-model="dialogVisible" width="60%">
+      <el-dialog v-model="dialogVisible" width="60%" :modal="true" :lock-scroll="false" :close-on-click-modal="false"
+        :close-on-press-escape="false">
         <template #title>
           <span>订单详情</span>
           <!-- <span class="date-text">

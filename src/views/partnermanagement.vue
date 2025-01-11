@@ -53,7 +53,8 @@
       @current-change="handlePageChange" layout="total, prev, pager, next, jumper" background class="pagination" />
 
     <!-- 新增合作方对话框 -->
-    <el-dialog v-model="addPartnerDialogVisible" title="新增合作方" width="60%">
+    <el-dialog v-model="addPartnerDialogVisible" title="新增合作方" width="60%" :modal="true" :lock-scroll="false"
+      :close-on-click-modal="false" :close-on-press-escape="false">
       <el-form :model="newPartner" ref="form" label-width="100px">
         <!-- 合作方名称 -->
         <el-form-item label="合作方名称" :rules="[{ required: true, message: '请输入合作方名称', trigger: 'blur' }]">

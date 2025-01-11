@@ -36,7 +36,8 @@
 
 
         <!-- 查看详情对话框 -->
-        <el-dialog v-model="dialogVisible" title="产品详细信息" width="80%">
+        <el-dialog v-model="dialogVisible" title="产品详细信息" width="80%" :modal="true" :lock-scroll="false"
+            :close-on-click-modal="false" :close-on-press-escape="false">
             <el-table :data="paginatedDetailData" style="width: 100%">
                 <el-table-column label="序号" type="index" width="80" />
                 <el-table-column v-if="showPartnerId" label="产品ID" prop="productid" />
@@ -101,7 +102,8 @@
             class="pagination" />
 
 
-        <el-dialog v-model="inventoryCheckDialogVisible" title="选择盘点月份" width="20%">
+        <el-dialog v-model="inventoryCheckDialogVisible" title="选择盘点月份" width="20%" :modal="true" :lock-scroll="false"
+            :close-on-click-modal="false" :close-on-press-escape="false">
             <div>
                 <!-- 月份选择器 -->
                 <el-date-picker v-model="selectedMonth" type="month" placeholder="请选择盘点月份"

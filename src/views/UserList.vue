@@ -38,7 +38,8 @@
       @current-change="handlePageChange" layout="total, prev, pager, next, jumper" background class="pagination" />
 
     <!-- 新增用户对话框 -->
-    <el-dialog v-model="addUserDialogVisible" title="新增用户" width="60%">
+    <el-dialog v-model="addUserDialogVisible" title="新增用户" width="60%" :modal="true" :lock-scroll="false"
+      :close-on-click-modal="false" :close-on-press-escape="false">
       <el-form :model="newUser" ref="form" label-width="100px">
 
 

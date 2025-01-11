@@ -59,7 +59,8 @@
       @current-change="handlePageChange" layout="total, prev, pager, next, jumper" background class="pagination" />
 
     <!-- 订单详情对话框 -->
-    <el-dialog v-model="dialogTableVisible" title="订单详情" width="60%" @close="refreshOrderList"> <!-- 添加关闭事件 -->
+    <el-dialog v-model="dialogTableVisible" title="订单详情" width="60%" @close="refreshOrderList" :modal="true"
+      :lock-scroll="false" :close-on-click-modal="false" :close-on-press-escape="false"> <!-- 添加关闭事件 -->
 
       <el-table :data="dialogCurrentPageData" style="width: 100%">
 
@@ -87,7 +88,8 @@
     </el-dialog>
 
     <!-- 新增订单对话框 -->
-    <el-dialog v-model="addOrderDialogVisible" title="新增订单" width="60%">
+    <el-dialog v-model="addOrderDialogVisible" title="新增订单" width="60%" :modal="true" :lock-scroll="false"
+      :close-on-click-modal="false" :close-on-press-escape="false">
       <el-form :model="newOrder" ref="form" label-width="100px">
         <el-form-item v-if="showorderid" label="客户编号"
           :rules="[{ required: true, message: '请输入客户编号', trigger: 'blur' }]">

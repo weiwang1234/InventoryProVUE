@@ -51,7 +51,8 @@
     <el-pagination :current-page="currentPage" :page-size="pageSize" :total="purchaseOrders.length"
       @current-change="handlePageChange" layout="total, prev, pager, next, jumper" background class="pagination" />
     <!-- 详情 -->
-    <el-dialog v-model="dialogTableVisible" title="订单详情" width="60%" @close="refreshOrderList">
+    <el-dialog v-model="dialogTableVisible" title="订单详情" width="60%" @close="refreshOrderList" :modal="true"
+      :lock-scroll="false" :close-on-click-modal="false" :close-on-press-escape="false">
       <el-table :data="dialogCurrentPageData" style="width: 100%">
         <el-table-column v-if="showorderid" prop="orderid" label="订单编号" width="180" />
         <el-table-column v-if="showorderid" prop="ordetailid" label="订单详情编号" width="180" />
@@ -77,7 +78,8 @@
     </el-dialog>
 
 
-    <el-dialog v-model="addOrderDialogVisible" title="新增订单" width="60%">
+    <el-dialog v-model="addOrderDialogVisible" title="新增订单" width="60%" :modal="true" :lock-scroll="false"
+      :close-on-click-modal="false" :close-on-press-escape="false">
       <el-form :model="newOrder" ref="form" label-width="100px">
         <el-form-item v-if="showorderid" label="客户编号"
           :rules="[{ required: true, message: '请输入客户编号', trigger: 'blur' }]">

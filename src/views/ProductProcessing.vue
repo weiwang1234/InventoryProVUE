@@ -43,7 +43,8 @@
             class="pagination" />
 
         <!-- 查看产品详情对话框 -->
-        <el-dialog v-model="productDetailsDialogVisible" title="产品详情" width="60%" @close="refreshProductProcessing">
+        <el-dialog v-model="productDetailsDialogVisible" title="产品详情" width="60%" @close="refreshProductProcessing"
+            :modal="true" :lock-scroll="false" :close-on-click-modal="false" :close-on-press-escape="false">
             <el-button type="primary" @click="openAddViewProductDialog">新增产品设置</el-button>
 
             <el-table :data="currentPageDetailsData" style="width: 100%">
@@ -83,7 +84,8 @@
 
         </el-dialog>
 
-        <el-dialog v-model="editProductDialogVisible" title="编辑产品详情" width="60%">
+        <el-dialog v-model="editProductDialogVisible" title="编辑产品详情" width="60%" :modal="true" :lock-scroll="false"
+            :close-on-click-modal="false" :close-on-press-escape="false">
             <el-form :model="editedProduct" ref="form" label-width="100px">
 
                 <!-- 新增的明细ID -->
@@ -110,7 +112,8 @@
         </el-dialog>
 
         <!-- 新增产品加工设置对话框 -->
-        <el-dialog v-model="addProductDialogVisible" title="新增产品加工设置" width="60%">
+        <el-dialog v-model="addProductDialogVisible" title="新增产品加工设置" width="60%" :modal="true" :lock-scroll="false"
+            :close-on-click-modal="false" :close-on-press-escape="false">
             <el-form :model="newProduct" ref="form" label-width="100px">
                 <!-- 产品名称（选择框） -->
                 <el-form-item label="产品ID" v-if="showProductId">

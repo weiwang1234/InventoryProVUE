@@ -46,7 +46,8 @@
       </el-table-column>
     </el-table>
 
-    <el-dialog v-model="detailsDialogVisible" title="查看产品加工详情" width="60%">
+    <el-dialog v-model="detailsDialogVisible" title="查看产品加工详情" width="60%" :modal="true" :lock-scroll="false"
+      :close-on-click-modal="false" :close-on-press-escape="false">
       <el-table :data="currentDetailsPageData" style="width: 100%; text-align: left;">
         <el-table-column label="产出产品名称" prop="outputproductname" width="180" />
         <el-table-column label="产出数量" prop="outputcount" width="120" />
@@ -63,7 +64,8 @@
       @current-change="handlePageChange" layout="total, prev, pager, next, jumper" background class="pagination" />
 
     <!-- 产品加工对话框 -->
-    <el-dialog v-model="dialogVisible" title="产品加工" width="60%" @close="resetForm">
+    <el-dialog v-model="dialogVisible" title="产品加工" width="60%" @close="resetForm" :modal="true" :lock-scroll="false"
+      :close-on-click-modal="false" :close-on-press-escape="false">
       <el-form :model="formdd" ref="form" label-width="100px">
         <el-form-item v-if="showorderid" label="产品ID">
           <el-input v-model="formdd.productid" placeholder="请输入产品ID" style="width: 220px;" />

@@ -47,7 +47,8 @@
       @current-change="handlePageChange" layout="total, prev, pager, next, jumper" background class="pagination" />
 
     <!-- 新增产品对话框 -->
-    <el-dialog v-model="addProductDialogVisible" title="新增产品" width="60%">
+    <el-dialog v-model="addProductDialogVisible" title="新增产品" width="60%" :modal="true" :lock-scroll="false"
+      :close-on-click-modal="false" :close-on-press-escape="false">
       <el-form :model="newProduct" ref="form" label-width="100px">
         <!-- 产品名称 -->
         <el-form-item label="产品名称" :rules="[{ required: true, message: '请输入产品名称', trigger: 'blur' }]">
