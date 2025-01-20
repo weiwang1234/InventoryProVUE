@@ -130,7 +130,7 @@
           <!-- 选择产品 -->
           <el-form-item label="选择产品">
             <el-select v-model="productRow.productId" placeholder="请选择产品" @change="handleProductSelect(index)"
-              filterable>
+              filterable style="width: 170px;" :title="productRow.product?.productname">
               <el-option v-for="product in products" :key="product.productid" :value="product.productid"
                 :label="product.productname">
                 {{ product.productname }}
@@ -140,12 +140,14 @@
           </el-form-item>
           <!-- 产品总价 -->
           <el-form-item label="产品总价">
-            <el-input v-model="productRow.unitprice" type="number" placeholder="请输入产品总价" @input="updateOrderTotal" />
+            <el-input v-model="productRow.unitprice" type="number" placeholder="" @input="updateOrderTotal"
+              :title="productRow.unitprice" />
           </el-form-item>
+
 
           <!-- 产品数量 -->
           <el-form-item label="产品数量">
-            <el-input v-model="productRow.quantity" type="number" placeholder="请输入数量" @input="updateOrderTotal" />
+            <el-input v-model="productRow.quantity" type="number" placeholder="" @input="updateOrderTotal" />
           </el-form-item>
           <el-button type="danger" class="delete-btn" @click="removeProductRow(index)">删除</el-button>
         </div>

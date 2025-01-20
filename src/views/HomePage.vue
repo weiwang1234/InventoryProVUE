@@ -45,12 +45,7 @@
     </el-card>
 
     <!-- 产品库存柱状图 -->
-    <el-card>
-      <div class="chart-container">
-        <div></div>
-        <div ref="inventoryChart" style="height: 400px;"></div>
-      </div>
-    </el-card>
+
   </div>
 </template>
 

@@ -4,20 +4,20 @@
     <el-breadcrumb separator="/">
       <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
       <el-breadcrumb-item>
-        <a href="/home/partner-management">合作方管理</a>
+        <a href="/home/partner-management">客户管理</a>
       </el-breadcrumb-item>
     </el-breadcrumb>
 
     <!-- 搜索框 -->
     <el-row class="search-box" style="margin-bottom: 20px;">
       <el-col :span="24">
-        <el-input v-model="searchQuery" placeholder="请输入合作方姓名或电话" clearable suffix-icon="el-icon-search"
+        <el-input v-model="searchQuery" placeholder="请输入客户姓名名或电话" clearable suffix-icon="el-icon-search"
           @input="handleSearch" />
       </el-col>
     </el-row>
 
     <!-- 新增合作方按钮 -->
-    <el-button type="primary" @click="openAddPartnerDialog">新增合作方</el-button>
+    <el-button type="primary" @click="openAddPartnerDialog">新增客户</el-button>
 
     <!-- 合作方表格 -->
     <el-table :data="currentPageData" style="width: 100%">
@@ -27,17 +27,17 @@
         </template>
       </el-table-column>
       <el-table-column v-if="showPartnerId" prop="partnerid" label="合作方ID" />
-      <el-table-column prop="partnername" label="合作方名称" width="180" />
-      <el-table-column prop="partnerphone" label="合作方电话" width="180" />
-      <el-table-column prop="partneraddress" label="合作方地址" width="200" />
-      <el-table-column label="合作方状态" width="180">
+      <el-table-column prop="partnername" label="名称" width="180" />
+      <el-table-column prop="partnerphone" label="电话" width="180" />
+      <el-table-column prop="partneraddress" label="地址" width="200" />
+      <el-table-column label="状态" width="180">
         <template v-slot="scope">
           <span>{{ scope.row.partnerstatus === '1' ? '有效' : '失效' }}</span>
         </template>
       </el-table-column>
       <el-table-column prop="partnertype" label="合作方类型" width="180">
         <template v-slot="scope">
-          <span>{{ scope.row.partnertype === '1' ? '送货方' : '进货方' }}</span>
+          <span>{{ scope.row.partnertype === '1' ? '客户' : '进货厂家' }}</span>
         </template>
       </el-table-column> <el-table-column label="操作" width="200">
         <template v-slot="scope">

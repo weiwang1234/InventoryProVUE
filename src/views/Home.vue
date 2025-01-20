@@ -3,7 +3,7 @@
     <!-- Header -->
     <el-header
       style="background-color: #409EFF; color: white; padding: 0; display: flex; justify-content: space-between; align-items: center;">
-      <div style="line-height: 60px; padding-left: 20px; font-size: 20px;">欢迎来到后台管理系统</div>
+      <div style="line-height: 60px; padding-left: 20px; font-size: 20px;">路畅汽修订单管理系统</div>
 
       <!-- 右侧欢迎和退出按钮 -->
       <div style="display: flex; align-items: center; padding-right: 20px;">
@@ -40,8 +40,8 @@
               </el-icon>
               <span>订单管理</span>
             </template>
-            <el-menu-item index="1-1" @click="navigateTo('/home/Orders-list')">送货订单管理</el-menu-item>
-            <el-menu-item index="1-2" @click="navigateTo('/home/Orders-query')">送货订单汇总查询</el-menu-item>
+            <el-menu-item index="1-1" @click="navigateTo('/home/Orders-list')">订单管理</el-menu-item>
+            <el-menu-item index="1-2" @click="navigateTo('/home/Orders-query')">订单汇总查询</el-menu-item>
             <el-menu-item index="1-3" @click="navigateTo('/home/PurchaseOrders-list')">进货订单管理</el-menu-item>
             <el-menu-item index="1-4" @click="navigateTo('/home/PurchaseSummary-Query')">进货订单汇总查询</el-menu-item>
             <el-menu-item index="1-" @click="navigateTo('/home/Other-Expenses')">其他支出订单管理</el-menu-item>
@@ -56,7 +56,7 @@
               </el-icon>
               <span>月底盘点</span>
             </template>
-            <el-menu-item index="2-1" @click="navigateTo('/home/stock-taking')">库存盘点</el-menu-item>
+            <el-menu-item index="2-1" @click="navigateTo('/home/stock-taking')">盘点</el-menu-item>
             <el-menu-item index="2-2" @click="navigateTo('/home/Profit-Statement')">盈利表</el-menu-item>
           </el-sub-menu>
 
@@ -84,30 +84,6 @@
             <span>合作方管理</span>
           </el-menu-item>
 
-          <!-- 用户列表菜单 -->
-          <el-sub-menu index="5">
-            <template #title>
-              <el-icon>
-                <Expand />
-              </el-icon>
-              <span>用户列表</span>
-            </template>
-            <el-menu-item index="5-1" @click="navigateTo('/home/product-list')">item one</el-menu-item>
-            <el-menu-item index="5-2" @click="navigateTo('/home/1-2')">item two</el-menu-item>
-          </el-sub-menu>
-
-          <el-menu-item index="6" @click="navigateTo('/home/2')">
-            <el-icon>
-              <IconMenu />
-            </el-icon>
-            <span>Navigator Two</span>
-          </el-menu-item>
-          <el-menu-item index="7" disabled>
-            <el-icon>
-              <Document />
-            </el-icon>
-            <span>Navigator Three</span>
-          </el-menu-item>
           <el-menu-item index="8" @click="navigateTo('/home/User-list')">
             <el-icon>
               <Setting />
