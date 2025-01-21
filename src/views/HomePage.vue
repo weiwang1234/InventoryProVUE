@@ -139,37 +139,7 @@ const initCharts = () => {
     //   { product: '产品E', stock: 5 },
 
     // ]
-    inventoryChartInstance.setOption({
-      title: {
-        text: '产品库存柱状图',
-      },
-      tooltip: {
-        trigger: 'item',
-      },
-      xAxis: {
-        type: 'category',
-        data: inventoryData.value.map(item => item.productname),
-      },
-      yAxis: {
-        type: 'value',
-      },
-      series: [
-        {
-          name: '库存',
-          type: 'bar',
-          data: inventoryData.value.map(item => item.quantity),
-          itemStyle: {
-            // 使用 itemStyle 来动态设置每个柱状图的颜色
-            normal: {
-              color: (params) => {
-                // 判断 quantity 值，若小于 10 则为红色，大于等于 10 则为蓝色
-                return params.data < 10 ? '#F56C6C' : '#0052D9'; // Element Plus 红色和蓝色
-              }
-            }
-          }
-        },
-      ],
-    })
+
   })
 }
 
