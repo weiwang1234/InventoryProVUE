@@ -200,6 +200,8 @@ const removeProductFromDialog = async (ordetailid: string) => {
     ElMessageBox.alert(`订单删除成功！`, '成功', {
       confirmButtonText: '确定',
       type: 'success',
+      lockScroll: false,
+
     });
   } catch (error: any) {
     if (error.response && error.response.status === 400) {
@@ -207,6 +209,8 @@ const removeProductFromDialog = async (ordetailid: string) => {
       ElMessageBox.alert(error.response.data, '库存不足', {
         confirmButtonText: '确定',
         type: 'error',
+        lockScroll: false,
+
       });
     } else {
       console.error('删除产品失败:', error);
@@ -215,6 +219,8 @@ const removeProductFromDialog = async (ordetailid: string) => {
       ElMessageBox.alert('删除产品时发生错误，请稍后重试！', '错误', {
         confirmButtonText: '确定',
         type: 'error',
+        lockScroll: false,
+
       });
     }
   }
@@ -318,6 +324,7 @@ const handleSearch = async () => {
     ElMessageBox.alert('请输入至少一个查询条件！', '提示', {
       confirmButtonText: '确定',
       type: 'warning',
+      lockScroll: false,
 
     });
     return;
@@ -331,6 +338,8 @@ const handleSearch = async () => {
       ElMessageBox.alert('暂无符合条件的数据，请调整查询条件后重试。', '提示', {
         confirmButtonText: '确定',
         type: 'warning',
+        lockScroll: false,
+
       });
     }
   } catch (error) {
@@ -507,6 +516,8 @@ const handleAddOrder = async () => {
     ElMessageBox.alert('请选择完整的客户信息！', '提示', {
       confirmButtonText: '确定',
       type: 'warning',
+      lockScroll: false,
+
     });
     return;
   }
@@ -515,6 +526,8 @@ const handleAddOrder = async () => {
     ElMessageBox.alert('请选择订单日期！', '提示', {
       confirmButtonText: '确定',
       type: 'warning',
+      lockScroll: false,
+
     });
     return;
   }
@@ -523,6 +536,8 @@ const handleAddOrder = async () => {
     ElMessageBox.alert('请至少添加一个产品！', '提示', {
       confirmButtonText: '确定',
       type: 'warning',
+      lockScroll: false,
+
     });
     return;
   }
@@ -532,6 +547,8 @@ const handleAddOrder = async () => {
       ElMessageBox.alert(`第 ${index + 1} 行未选择产品！`, '提示', {
         confirmButtonText: '确定',
         type: 'warning',
+        lockScroll: false,
+
       });
       return;
     }
@@ -539,6 +556,8 @@ const handleAddOrder = async () => {
       ElMessageBox.alert(`第 ${index + 1} 行的产品总价必须为正数！`, '提示', {
         confirmButtonText: '确定',
         type: 'warning',
+        lockScroll: false,
+
       });
       return;
     }
@@ -546,6 +565,8 @@ const handleAddOrder = async () => {
       ElMessageBox.alert(`第 ${index + 1} 行的产品数量必须为正数！`, '提示', {
         confirmButtonText: '确定',
         type: 'warning',
+        lockScroll: false,
+
       });
       return;
     }
@@ -579,6 +600,7 @@ const handleAddOrder = async () => {
       ElMessageBox.alert('订单新增成功！', '提示', {
         confirmButtonText: '确定',
         type: 'success',
+        lockScroll: false,
       });
 
       addOrderDialogVisible.value = false;
@@ -598,12 +620,16 @@ const handleAddOrder = async () => {
       ElMessageBox.alert('新增订单失败，请重试！', '错误', {
         confirmButtonText: '确定',
         type: 'error',
+        lockScroll: false,
+
       });
     }
   } catch (error) {
     console.error('新增订单失败:', error);
     ElMessageBox.alert('新增订单时发生错误，请稍后重试！', '错误', {
       confirmButtonText: '确定',
+      lockScroll: false,
+
     });
   }
 };
