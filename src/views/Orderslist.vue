@@ -42,12 +42,13 @@
           {{ Number(scope.row.ordertotalamount).toFixed(2) }}
         </template>
       </el-table-column> <el-table-column prop="orderdate" label="订单日期" width="180" />
-      <el-table-column label="操作" width="260">
+      <el-table-column label="操作" width="290">
 
         <template v-slot="scope">
           <el-button plain @click="openOrderDetailsDialog(scope.row.orderid)">查看详情</el-button>
           <el-button type="danger" @click="confirmDeleteOrder(scope.row.orderid)">删除</el-button>
-          <el-button type="primary" @click="printOrder(scope.row.orderid)">打印</el-button>
+          <el-button type="primary"
+            @click="printOrder(scope.row.orderid, scope.row.orderparname, scope.row.orderdate)">打印生成</el-button>
         </template>
 
       </el-table-column>
@@ -256,48 +257,138 @@ const resetSearchFilters = () => {
   // getOrders(); // 调用 API 获取全部订单
 };
 
-const printOrder = async (orderid: string) => {
+const printOrder = async (orderid: string, orderparname: string, orderdate: string) => {
   try {
-    // 从后台获取订单详情
-    const response = await api.post(`/purchaseorderdetails/getorderid/${orderid}`);
-    const orderDetailData = response.data || [];
+    // 获取订单详情
+    await getOrderDetails(orderid);
 
-    // 如果订单数据为空，则直接返回
-    if (orderDetailData.length === 0) {
-      console.error("订单数据为空，无法打印");
+    // 确保数据已经加载
+    if (orderDetailData.value.length === 0) {
+      console.error('没有订单数据可打印');
       return;
     }
 
-    // 假设订单数据是一个数组，这里取第一个订单详情进行打印
-    const order = orderDetailData[0]; // 或者根据实际需求选择需要的订单
+    // 计算总金额
+    const totalAmount = orderDetailData.value.reduce((total, item) => {
+      return total + item.quantity * item.unitprice;
+    }, 0);
 
-    // 创建一个新的窗口用于打印
+    // 创建一个新的打印窗口
     const printWindow = window.open('', '', 'width=800, height=600');
 
-    // 确保 printWindow 成功打开
+    // 检查窗口是否成功打开
     if (printWindow) {
-      // 设置打印内容
+      // 打印页面的 HTML 内容
       printWindow.document.write(`
         <html>
-          <head><title>打印订单</title></head>
+          <head>
+            <title>路畅汽修维修单</title>
+            <style>
+              body {
+                font-family: Arial, sans-serif;
+                line-height: 1.6;
+                padding: 20px;
+              }
+              h1 {
+                text-align: center;
+                margin-bottom: 20px;
+              }
+              p {
+                font-size: 16px;
+                line-height: 1.8;
+              }
+              table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+              }
+              th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: center;
+              }
+              th {
+                background-color: #f2f2f2;
+              }
+              .summary {
+                margin-top: 30px;
+                font-size: 18px;
+                font-weight: bold;
+                text-align: left;
+
+              }
+              .footer {
+                margin-top: 40px;
+                font-size: 14px;
+                text-align: center;
+              }
+              .footer p {
+                margin: 5px 0;
+              }
+              .footer img {
+                width: 100px; /* 调整二维码图片的大小 */
+                height: 100px;
+                margin-top: 10px;
+              }
+            .total-amount {
+                text-align: right;
+                font-size: 18px;
+                font-weight: bold;
+                margin-top: 20px;
+              }
+            </style>
+          </head>
           <body>
-            <h1>订单编号: ${order.orderid}</h1>
-            <p><strong>商户名称:</strong> ${order.orderparname}</p>
-            <p><strong>订单日期:</strong> ${order.orderdate}</p>
+            <h1>路畅汽修维修单</h1>
+            <p><strong>客户名称:</strong> ${orderparname}</p>
+            <p><strong>订单日期:</strong> ${orderdate}</p>
+
+            <table>
+              <thead>
+                <tr>
+                  <th>序号</th>
+                  <th>产品名称</th>
+                  <th>数量</th>
+                  <th>单价</th>
+                  <th>总价</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${orderDetailData.value.map((item, index) => `
+                  <tr>
+                    <td>${index + 1}</td> <!-- 使用 index+1 来表示序号 -->
+                    <td>${item.productname}</td>
+                    <td>${item.quantity}</td>
+                    <td>${(item.unitprice / 2).toFixed(2)}</td>
+                    <td>${item.unitprice.toFixed(2)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+            <div class="total-amount">
+              <p><strong>订单总金额:</strong> ${totalAmount.toFixed(2)}</p>
+            </div>
+            <div class="footer">
+              <p>如果您有任何问题或需要帮助，请直接扫描二维码或电话与我沟通。</p>
+              <p>电话：15203747650</p>
+              <img src="/images/qrcodeUrl.png" alt="微信二维码"> <!-- 二维码图片路径 -->
+            </div>
           </body>
         </html>
       `);
-
-      // 等待 DOM 渲染完成后进行打印
       printWindow.document.close();
-      printWindow.print();
-    } else {
-      console.error("无法打开打印窗口。");
+      setTimeout(() => {
+        printWindow.print();
+      }, 1000); // 延迟 1 秒
     }
   } catch (error) {
-    console.error("获取订单详情失败:", error);
+    console.error('打印订单时出错:', error);
   }
 };
+
+
+
+
 // 获取客户数据
 const getCustomers = async () => {
   try {
