@@ -37,7 +37,8 @@
       <el-table-column label="操作" width="200">
         <template v-slot="scope">
           <el-button plain @click="viewDetails(scope.row.orderid)">查看详情</el-button>
-          <el-button type="danger" @click="deleteOrder(scope.row.orderid)">删除</el-button>
+          <el-button danger @click="deleteOrder(scope.row.orderid)">删除</el-button>
+          <el-button primary @click="printOrder(scope.row.orderid)">打印</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -186,6 +187,52 @@ const viewDetails = async (orderid: string) => {
     console.error('获取订单详情失败:', error);
   }
 };
+
+
+const printOrder = async (orderid: string) => {
+  try {
+    // 从后台获取订单详情
+    const response = await api.post(`/purchaseorderdetails/getorderid/${orderid}`);
+    const orderDetailData = response.data || [];
+
+    // 如果订单数据为空，则直接返回
+    if (orderDetailData.length === 0) {
+      console.error("订单数据为空，无法打印");
+      return;
+    }
+
+    // 假设订单数据是一个数组，这里取第一个订单详情进行打印
+    const order = orderDetailData[0]; // 或者根据实际需求选择需要的订单
+
+    // 创建一个新的窗口用于打印
+    const printWindow = window.open('', '', 'width=800, height=600');
+
+    // 确保 printWindow 成功打开
+    if (printWindow) {
+      // 设置打印内容
+      printWindow.document.write(`
+        <html>
+          <head><title>打印订单</title></head>
+          <body>
+            <h1>订单编号: ${order.orderid}</h1>
+            <p><strong>商户名称:</strong> ${order.orderparname}</p>
+            <p><strong>订单金额:</strong> ${formatAmount(order.ordertotalamount)}</p>
+            <p><strong>订单日期:</strong> ${order.orderdate}</p>
+          </body>
+        </html>
+      `);
+
+      // 等待 DOM 渲染完成后进行打印
+      printWindow.document.close();
+      printWindow.print();
+    } else {
+      console.error("无法打开打印窗口。");
+    }
+  } catch (error) {
+    console.error("获取订单详情失败:", error);
+  }
+};
+
 
 
 const removeProductFromDialog = async (ordetailid: string) => {
