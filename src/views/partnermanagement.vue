@@ -57,31 +57,30 @@
       :close-on-click-modal="false" :close-on-press-escape="false">
       <el-form :model="newPartner" ref="form" label-width="100px">
         <!-- 合作方名称 -->
-        <el-form-item label="合作方名称" :rules="[{ required: true, message: '请输入合作方名称', trigger: 'blur' }]">
+        <el-form-item label="名称" :rules="[{ required: true, message: '请输入名称', trigger: 'blur' }]">
           <el-input v-model="newPartner.partnername" style="width: 300px;" />
         </el-form-item>
 
         <!-- 合作方电话 -->
-        <el-form-item label="合作方电话" :rules="[{ required: true, message: '请输入合作方电话', trigger: 'blur' }]">
+        <el-form-item label="电话" :rules="[{ required: true, message: '请输入方电话', trigger: 'blur' }]">
           <el-input v-model="newPartner.partnerphone" style="width: 300px;" />
         </el-form-item>
 
         <!-- 合作方状态 -->
-        <el-form-item v-if="showPartnerId" label="合作方状态"
-          :rules="[{ required: true, message: '请输入合作方状态', trigger: 'blur' }]">
+        <el-form-item v-if="showPartnerId" label="状态" :rules="[{ required: true, message: '请输入状态', trigger: 'blur' }]">
           <el-input v-model="newPartner.partnerstatus" :value="1" style="width: 300px;" />
         </el-form-item>
 
         <!-- 合作方地址 -->
-        <el-form-item label="合作方地址" :rules="[{ required: true, message: '请输入合作方地址', trigger: 'blur' }]">
+        <el-form-item label="地址" :rules="[{ required: true, message: '请输入地址', trigger: 'blur' }]">
           <el-input v-model="newPartner.partneraddress" style="width: 300px;" />
         </el-form-item>
 
         <!-- 合作方类型 -->
-        <el-form-item label="合作方类型" :rules="[{ required: true, message: '请输入合作方类型', trigger: 'blur' }]">
-          <el-select v-model="newPartner.partnertype" placeholder="请选择合作方类型" style="width: 300px;">
-            <el-option label="送货方" value="1"></el-option>
-            <el-option label="进货方" value="2"></el-option>
+        <el-form-item label="类型" :rules="[{ required: true, message: '请输入类型', trigger: 'blur' }]">
+          <el-select v-model="newPartner.partnertype" placeholder="请选择类型" style="width: 300px;">
+            <el-option label="客户" value="1"></el-option>
+            <el-option label="厂家" value="2"></el-option>
           </el-select>
         </el-form-item>
       </el-form>

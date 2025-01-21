@@ -141,6 +141,7 @@ const searchOrders = async () => {
       ElMessageBox.alert('请输入至少一个查询条件！', '提示', {
         confirmButtonText: '确定',
         type: 'warning',
+        lockScroll: false,
       });
       return; // 如果没有输入查询条件，则直接返回
     }
@@ -166,6 +167,7 @@ const searchOrders = async () => {
       ElMessageBox.alert('暂无符合条件的数据，请调整查询条件后重试。', '提示', {
         confirmButtonText: '确定',
         type: 'warning',
+        lockScroll: false,
       });
     }
     currentPage.value = 1; // 重置到第一页

@@ -45,7 +45,12 @@
     </el-card>
 
     <!-- 产品库存柱状图 -->
-
+    <!-- <el-card>
+      <div class="chart-container">
+        <div></div>
+        <div ref="inventoryChart" style="height: 400px;"></div>
+      </div>
+    </el-card> -->
   </div>
 </template>
 
@@ -74,7 +79,7 @@ const monthlyPurchaseAmount = ref(0);
 
 // ECharts 配置和数据处理
 const salesChart = ref(null)
-const inventoryChart = ref(null)
+// const inventoryChart = ref(null)
 
 const fetchDailySalesAmount = async () => {
   try {
@@ -96,7 +101,7 @@ const fetchDailySalesAmount = async () => {
 const initCharts = () => {
   nextTick(() => {
     const salesChartInstance = echarts.init(salesChart.value)
-    const inventoryChartInstance = echarts.init(inventoryChart.value)
+    // const inventoryChartInstance = echarts.init(inventoryChart.value)
 
     // 销售曲线图配置
     salesChartInstance.setOption({

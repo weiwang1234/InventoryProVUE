@@ -247,6 +247,7 @@ const viewOrderDetail = async (order: Order) => {
     ElMessageBox.alert('获取订单详情失败，请稍后再试！', '错误', {
       confirmButtonText: '确定',
       type: 'error',
+      lockScroll: false,
     });
   }
 };

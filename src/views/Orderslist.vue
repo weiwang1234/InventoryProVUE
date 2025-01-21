@@ -514,6 +514,7 @@ const handleSearch = async () => {
       ElMessageBox.alert('请输入至少一个查询条件！', '提示', {
         confirmButtonText: '确定',
         type: 'warning',
+        lockScroll: false,
       });
       return;
     }
@@ -545,6 +546,8 @@ const handleSearch = async () => {
       ElMessageBox.alert('暂无符合条件的数据，请调整查询条件后重试。', '提示', {
         confirmButtonText: '确定',
         type: 'warning',
+        lockScroll: false,
+
       });
     }
   } catch (error) {
@@ -552,6 +555,7 @@ const handleSearch = async () => {
     ElMessage({
       message: '搜索订单失败，请稍后再试。',
       type: 'error',
+
     });
   }
 };

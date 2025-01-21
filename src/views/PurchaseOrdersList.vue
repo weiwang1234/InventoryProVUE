@@ -358,6 +358,7 @@ const deleteOrder = async (orderid: string) => {
     ElMessageBox.alert(`订单删除成功！`, '成功', {
       confirmButtonText: '确定',
       type: 'success',
+      lockScroll: false,
     });
 
     getPurchaseOrders(); // 刷新订单列表
@@ -367,6 +368,7 @@ const deleteOrder = async (orderid: string) => {
       ElMessageBox.alert(error.response.data, '提示', {
         confirmButtonText: '确定',
         type: 'error',
+        lockScroll: false,
       });
     } else {
       console.error('删除订单失败:', error);
@@ -375,6 +377,7 @@ const deleteOrder = async (orderid: string) => {
       ElMessageBox.alert('删除订单时发生错误，请稍后重试！', '错误', {
         confirmButtonText: '确定',
         type: 'error',
+        lockScroll: false,
       });
     }
   }
