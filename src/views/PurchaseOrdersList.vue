@@ -113,7 +113,7 @@
           <!-- 产品名称列 -->
           <el-form-item label="产品名称" class="form-item-inline">
             <el-select v-model="productRow.productId" placeholder="请选择产品" @change="handleProductSelect(index)"
-              filterable>
+              filterable style="width: 170px;" :title="productRow.productname">
               <el-option v-for="product in products" :key="product.productid" :value="product.productid"
                 :label="product.productname">
                 {{ product.productname }}

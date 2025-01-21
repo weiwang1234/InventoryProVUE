@@ -81,7 +81,7 @@
             <el-icon>
               <Expand />
             </el-icon>
-            <span>合作方管理</span>
+            <span>客户管理</span>
           </el-menu-item>
 
           <el-menu-item index="8" @click="navigateTo('/home/User-list')">
