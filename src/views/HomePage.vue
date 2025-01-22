@@ -1,8 +1,8 @@
 <template>
   <div class="home-page">
     <!-- 销售统计 -->
-    <el-row gutter={20}>
-      <el-col :span="6">
+    <el-row gutter={25}>
+      <el-col :span="5">
         <el-card>
           <div class="stat-card">
             <div>当日销售总金额</div>
@@ -10,7 +10,7 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :span="6">
+      <el-col :span="5">
         <el-card>
           <div class="stat-card">
             <div>当月销售总金额</div>
@@ -18,7 +18,7 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :span="6">
+      <el-col :span="5">
         <el-card>
           <div class="stat-card">
             <div>当日进货总金额</div>
@@ -26,7 +26,7 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :span="6">
+      <el-col :span="5">
         <el-card>
           <div class="stat-card">
             <div>当月进货总金额</div>
@@ -34,7 +34,33 @@
           </div>
         </el-card>
       </el-col>
+      <el-col :span="4">
+        <el-card @click="openReminderDialog">
+          <div class="stat-card">
+            <div>保养提醒</div>
+            <div class="stat-value">{{ reminderCount }} 条</div>
+          </div>
+        </el-card>
+      </el-col>
     </el-row>
+    <el-dialog v-model="isReminderDialogVisible" title="保养提醒列表" width="60%" :modal="true" :close-on-click-modal="false"
+      :close-on-press-escape="false" :lock-scroll="false">
+      <div>
+        <!-- 假设您会根据实际数据动态展示提醒列表 -->
+        <el-table :data="reminderList" style="width: 100%">
+          <el-table-column v-if="showorderid" label="订单编号" prop="orderid" />
+          <el-table-column label="客户" prop="orderparname" />
+          <el-table-column label="上次保养时间" prop="orderdate" />
+          <el-table-column label="电话号码" prop="partnerphone" />
+          <el-table-column label="操作">
+            <template v-slot="scope">
+              <el-button type="danger" @click="editOrder(scope.row.orderid)">不再提醒</el-button>
+            </template>
+          </el-table-column>
+
+        </el-table>
+      </div>
+    </el-dialog>
 
     <!-- 销售曲线图 -->
     <el-card>
@@ -66,7 +92,15 @@ const dailySalesAmount = ref(0);
 const monthlySalesAmount = ref(0);
 const dailyPurchaseAmount = ref(0);
 const monthlyPurchaseAmount = ref(0);
+const isReminderDialogVisible = ref(false);
+const reminderCount = ref(5);  // 假设有5条提醒
+const reminderList = ref([]); // 用于存储从后端获取的数据
+const showorderid = ref(false) // 控制是否显示产品ID列
 
+// 点击“保养提醒”卡片时调用此方法
+const openReminderDialog = async () => {
+  isReminderDialogVisible.value = true;
+};
 
 // 模拟的销售数据（包括销售和进货金额）
 // const salesData = [
@@ -80,6 +114,40 @@ const monthlyPurchaseAmount = ref(0);
 // ECharts 配置和数据处理
 const salesChart = ref(null)
 // const inventoryChart = ref(null)
+const editOrder = async (orderId) => {
+  try {
+    console.log('编辑订单成功:', response.data);
+
+    const response = await api.post('/orders/updatereminder', { orderId });
+    console.log('编辑订单成功:', response.data);
+  } catch (error) {
+    console.error('编辑订单失败:', error);
+  }
+};
+
+const getOrders = async () => {
+  try {
+    // 在 URL 中传递查询参数
+    const targetDate = '2025-05-20'; // 目标日期
+    const daysDifference = 20; // 天数差异
+
+    // 使用 URL 查询参数发送 POST 请求
+    const response = await api.post('/orders/find', null, {
+      params: {
+        targetDate: targetDate,
+        daysDifference: daysDifference
+      }
+    });
+    reminderList.value = response.data; // 假设返回的数据是订单列表
+    // 处理返回的数据
+    console.log('返回的数据:', response.data);
+    // 你可以根据需要更新前端的状态或视图
+  } catch (error) {
+    console.error('获取订单数据失败:', error);
+  }
+};
+
+
 
 const fetchDailySalesAmount = async () => {
   try {
@@ -149,6 +217,7 @@ const initCharts = () => {
 }
 
 onMounted(() => {
+  getOrders()
   fetchDailySalesAmount().then(() => {
     initCharts();
   });
