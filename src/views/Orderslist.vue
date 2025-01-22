@@ -111,8 +111,17 @@
 
         <el-form-item label="订单日期" :rules="[{ required: true, message: '请输入订单日期', trigger: 'blur' }]">
           <el-date-picker v-model="newOrder.orderdate" type="date" placeholder="请选择一个日期" />
-
         </el-form-item>
+
+        <el-form-item label="是否保养" :rules="[{ required: true, message: '请选择是否保养', trigger: 'blur' }]">
+          <el-radio-group v-model="newOrder.maintenance">
+            <el-radio :value="1">是</el-radio>
+            <el-radio :value="2">否</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+
+
 
         <el-form-item label="总金额" :rules="[{ required: true, message: '请输入总金额', trigger: 'blur' }]">
           <el-input v-model="newOrder.ordertotalamount" readonly style="width: 220px;" />
@@ -192,6 +201,7 @@ interface Order {
   orderid: string
   orderparid: string
   orderparname: string
+  maintenance: string
   ordertotalamount: number
   orderdate: string
   selectedProducts: ProductRow[]
@@ -419,6 +429,7 @@ const newOrder = ref<Order>({
   orderid: '',
   orderparid: '',
   orderparname: '',
+  maintenance: '',
   ordertotalamount: 0,
   orderdate: '',
   selectedProducts: [
@@ -516,6 +527,10 @@ const handleAddOrder = async () => {
       return;
     }
 
+    if (!newOrder.value.maintenance) {
+      alert('请选择是否保养');
+      return;
+    }
     if (!newOrder.value.orderdate) {
       alert('请选择订单日期');
       return;
@@ -551,6 +566,7 @@ const handleAddOrder = async () => {
         orderid: newOrder.value.orderid,
         orderparid: newOrder.value.orderparid,
         orderparname: newOrder.value.orderparname,
+        maintenance: newOrder.value.maintenance,
         orderdate: formatDate(newOrder.value.orderdate),
         ordertotalamount: newOrder.value.ordertotalamount,
       },
@@ -609,6 +625,7 @@ const resetOrderForm = () => {
     orderid: '',
     orderparid: '',
     orderparname: '',
+    maintenance: '',
     ordertotalamount: 0,
     orderdate: '',
     selectedProducts: [
