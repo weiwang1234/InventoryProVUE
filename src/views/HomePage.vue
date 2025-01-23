@@ -116,10 +116,12 @@ const salesChart = ref(null)
 // const inventoryChart = ref(null)
 const editOrder = async (orderId) => {
   try {
+    // 发送 POST 请求到后端，传递 orderId 在请求体中
+    const response = await api.post('/orders/updatereminder', null, {
+      params: { orderid: orderId }, // 这里参数名字要和后端匹配
+    });
     console.log('编辑订单成功:', response.data);
-
-    const response = await api.post('/orders/updatereminder', { orderId });
-    console.log('编辑订单成功:', response.data);
+    getOrders();
   } catch (error) {
     console.error('编辑订单失败:', error);
   }
