@@ -39,11 +39,11 @@
         <template v-slot="scope">
           <span>{{ scope.row.partnertype === '1' ? '客户' : '进货厂家' }}</span>
         </template>
-      </el-table-column> <el-table-column label="操作" width="200">
+      </el-table-column> <el-table-column label="操作" width="250">
         <template v-slot="scope">
           <el-button type="danger" @click="confirmDeletePartner(scope.row.partnerid)">失效</el-button>
           <el-button type="success" @click="confirmtakeeffectPartner(scope.row.partnerid)">生效</el-button>
-
+          <el-button type="primary" @click="editPartner(scope.row.partnerid)">编辑</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -90,6 +90,36 @@
         <el-button type="primary" @click="handleAddPartner">确定</el-button>
       </span>
     </el-dialog>
+
+    <el-dialog title="编辑合作方" v-model="dialogVisible" width="60%" :modal="true">
+      <el-form :model="partner" ref="formRef" label-width="100px">
+        <el-form-item label="合作方名称">
+          <el-input v-model="partner.partnername" disabled></el-input>
+        </el-form-item>
+
+        <el-form-item label="合作方地址">
+          <el-input v-model="partner.partneraddress"></el-input>
+        </el-form-item>
+
+        <el-form-item label="合作方电话">
+          <el-input v-model="partner.partnerphone"></el-input>
+        </el-form-item>
+
+        <el-form-item label="合作方状态" v-if="showorderid">
+          <el-input v-model="partner.partnerstatus" disabled></el-input>
+        </el-form-item>
+
+        <el-form-item label="合作方类型" v-if="showorderid">
+          <el-input v-model="partner.partnertype" disabled></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleEditPartner">保存</el-button>
+      </span>
+
+    </el-dialog>
+
   </div>
 </template>
 
@@ -99,6 +129,7 @@ import api from '../api'
 import { ElMessage } from 'element-plus'; // 使用 Element Plus 的消息提示组件
 
 const showPartnerId = ref(false) // 控制是否显示合作方ID列
+const showorderid = ref(false) // 控制是否显示产品ID列
 
 interface Partner {
   partnerid: string
@@ -108,13 +139,12 @@ interface Partner {
   partneraddress: string
   partnertype: string
 }
-
 const partners = ref<Partner[]>([]) // 使用 ref 使 partners 绑定到响应式数据
-
 const currentPage = ref(1) // 当前页码
 const pageSize = ref(10) // 每页显示条数
 const searchQuery = ref('') // 搜索查询内容
 const addPartnerDialogVisible = ref(false) // 控制新增合作方对话框显示
+const dialogVisible = ref(false)
 const newPartner = ref<Partner>({
   partnerid: '',
   partnername: '',
@@ -123,11 +153,39 @@ const newPartner = ref<Partner>({
   partneraddress: '',
   partnertype: ''
 })
-
+const partner = ref({
+  partnerid: null,
+  partnername: '',
+  partneraddress: '',
+  partnerphone: '',
+  partnerstatus: '',
+  partnertype: ''
+})
 const form = ref()
 
 defineExpose({ form })
+const editPartner = async (partnerId: string) => {
+  try {
+    // 假设你有一个 API 来获取合作方信息
+    // const response = await fetch(`/api/partners/${partnerId}`);
+    // const partnerData = await response.json();
 
+    // 处理获取到的数据，比如显示到编辑对话框中
+    dialogVisible.value = true // 显示编辑对话框
+    console.log("获取到的合作方数据:" + partnerId);
+
+    const response = await api.post('/partners/getById', null, {
+      params: { partnerId: partnerId } // 将partnerId作为查询参数
+    });
+    partner.value = response.data;
+    console.log(response.data)
+    console.log("获取到的合作方数据:" + partnerId);
+
+
+  } catch (error) {
+    console.error("编辑合作方失败:", error);
+  }
+}
 // 获取合作方数据
 const getPartners = async () => {
   try {
@@ -148,6 +206,25 @@ const filteredData = computed(() => {
     item.partnername.includes(searchQuery.value) || item.partnerphone.includes(searchQuery.value) // 根据姓名或电话号码进行搜索
   )
 })
+
+const handleEditPartner = async () => {
+  try {
+    // 提交修改后的数据
+    const partnerid = partner.value.partnerid
+    const response = await api.post(`/partners/update/${partnerid}`, partner.value)
+    console.log(response.data)
+    if (response.data) {
+      ElMessage.success('编辑成功')
+      getPartners()
+      dialogVisible.value = false // 关闭对话框
+    } else {
+      ElMessage.error('编辑方失败')
+    }
+  } catch (error) {
+    console.error('编辑合作方失败:', error)
+    ElMessage.error('编辑合作方失败')
+  }
+}
 
 // 计算当前页数据
 const currentPageData = computed(() => {

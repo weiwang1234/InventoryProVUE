@@ -115,9 +115,8 @@ const salesChart = ref(null)
 const reminderCount = ref(0);  // 假设有5条提醒
 const getOrderCount = async () => {
   try {
-    const targetDate = '2025-05-20';  // 目标日期
+    const targetDate = getCurrentDate();  // 目标日期
     const daysDifference = 20;  // 天数差异
-
     // 发送 POST 请求到后端，传递日期和天数参数
     const response = await api.post('/orders/count', null, {
       params: {
@@ -151,7 +150,7 @@ const editOrder = async (orderId) => {
 const getOrders = async () => {
   try {
     // 在 URL 中传递查询参数
-    const targetDate = '2025-05-20'; // 目标日期
+    const targetDate = getCurrentDate(); // 目标日期
     const daysDifference = 20; // 天数差异
 
     // 使用 URL 查询参数发送 POST 请求
@@ -238,7 +237,16 @@ const initCharts = () => {
 
   })
 }
+const getCurrentDate = () => {
+  const date = new Date();
 
+  // 获取年份、月份、日期
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0'); // 月份从0开始，需要加1
+  const day = date.getDate().toString().padStart(2, '0'); // 确保天数是两位数
+
+  return `${year}-${month}-${day}`;
+};
 onMounted(() => {
   getOrders();
   getOrderCount();
