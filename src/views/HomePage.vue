@@ -93,7 +93,6 @@ const monthlySalesAmount = ref(0);
 const dailyPurchaseAmount = ref(0);
 const monthlyPurchaseAmount = ref(0);
 const isReminderDialogVisible = ref(false);
-const reminderCount = ref(5);  // 假设有5条提醒
 const reminderList = ref([]); // 用于存储从后端获取的数据
 const showorderid = ref(false) // 控制是否显示产品ID列
 
@@ -113,6 +112,27 @@ const openReminderDialog = async () => {
 
 // ECharts 配置和数据处理
 const salesChart = ref(null)
+const reminderCount = ref(0);  // 假设有5条提醒
+const getOrderCount = async () => {
+  try {
+    const targetDate = '2025-05-20';  // 目标日期
+    const daysDifference = 20;  // 天数差异
+
+    // 发送 POST 请求到后端，传递日期和天数参数
+    const response = await api.post('/orders/count', null, {
+      params: {
+        date: targetDate,
+        days: daysDifference
+      }
+    });
+
+    // 更新提醒数量
+    reminderCount.value = response.data;  // 假设后端返回的是数量
+    console.log('提醒数量:', reminderCount.value);
+  } catch (error) {
+    console.error('获取提醒数量失败:', error);
+  }
+};
 // const inventoryChart = ref(null)
 const editOrder = async (orderId) => {
   try {
@@ -122,6 +142,7 @@ const editOrder = async (orderId) => {
     });
     console.log('编辑订单成功:', response.data);
     getOrders();
+    getOrderCount();
   } catch (error) {
     console.error('编辑订单失败:', error);
   }
@@ -219,7 +240,8 @@ const initCharts = () => {
 }
 
 onMounted(() => {
-  getOrders()
+  getOrders();
+  getOrderCount();
   fetchDailySalesAmount().then(() => {
     initCharts();
   });
